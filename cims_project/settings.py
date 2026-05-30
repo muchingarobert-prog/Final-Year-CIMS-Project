@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'corsheaders',
 
     'church_members',
+    'committees',
 ]
 
 MIDDLEWARE = [

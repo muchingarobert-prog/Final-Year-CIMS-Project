@@ -1,5 +1,5 @@
 from django.db import models
-
+from committees.models import Committee
 
 class Member(models.Model):
     GENDER_CHOICES = [
