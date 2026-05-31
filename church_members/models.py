@@ -1,7 +1,16 @@
 from django.db import models
 from committees.models import Committee
 
+
 class Member(models.Model):
+
+    ROLE_CHOICES = [
+        ('SUPER_USER', 'Super User'),
+        ('ADMIN_USER', 'Admin User'),
+        ('HIGH_PRIVILEGE_USER', 'High Privilege User'),
+        ('MEMBER', 'Member'),
+    ]
+
     GENDER_CHOICES = [
         ('M', 'Male'),
         ('F', 'Female'),
@@ -16,9 +25,20 @@ class Member(models.Model):
         choices=GENDER_CHOICES
     )
 
+    role = models.CharField(
+        max_length=30,
+        choices=ROLE_CHOICES,
+        default='MEMBER'
+    )
+
     date_of_birth = models.DateField()
 
     date_of_baptism = models.DateField()
+
+    committees = models.ManyToManyField(
+        Committee,
+        blank=True
+    )
 
     phone_number = models.CharField(max_length=20)
 

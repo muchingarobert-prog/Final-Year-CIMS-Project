@@ -4,13 +4,15 @@ from .models import Member
 
 @admin.register(Member)
 class MemberAdmin(admin.ModelAdmin):
+
     list_display = (
         'first_name',
-        'last_name',
-        'gender',
-        'phone_number',
-        'email',
-        'date_of_baptism',
+    'last_name',
+    'role',
+    'gender',
+    'phone_number',
+    'email',
+    'date_of_baptism',
     )
 
     search_fields = (
@@ -21,11 +23,16 @@ class MemberAdmin(admin.ModelAdmin):
     )
 
     list_filter = (
+        'role',
         'gender',
-        'date_of_baptism',
+        'committees',
     )
 
     ordering = (
         'last_name',
         'first_name',
+    )
+
+    filter_horizontal = (
+        'committees',
     )
