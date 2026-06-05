@@ -5,19 +5,20 @@ from church_members.models import Member
 class Event(models.Model):
 
     EVENT_TYPES = [
-        ('SERVICE', 'Church Service'),
-        ('YOUTH', 'Youth Activity'),
-        ('COMMITTEE', 'Committee Meeting'),
-        ('OUTREACH', 'Outreach Program'),
-        ('CHOIR', 'Choir Activity'),
+        ('SERVICE', 'Service'),
+        ('MEETING', 'Meeting'),
+        ('YOUTH', 'Youth Program'),
         ('SPECIAL', 'Special Event'),
     ]
 
     title = models.CharField(
-        max_length=200
+        max_length=100
     )
 
-    description = models.TextField()
+    description = models.TextField(
+        blank=True,
+        null=True
+    )
 
     event_type = models.CharField(
         max_length=20,
@@ -29,14 +30,9 @@ class Event(models.Model):
     end_date = models.DateTimeField()
 
     location = models.CharField(
-        max_length=255
-    )
-
-    organizer = models.ForeignKey(
-        Member,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
+        max_length=100,
+        blank=True,
+        null=True
     )
 
     registration_required = models.BooleanField(
@@ -45,9 +41,48 @@ class Event(models.Model):
 
     attendees = models.ManyToManyField(
         Member,
-        blank=True,
-        related_name='registered_events'
+        through='EventRegistration',
+        blank=True
     )
 
     def __str__(self):
         return self.title
+
+
+class EventRegistration(models.Model):
+
+    STATUS_CHOICES = [
+        ('REGISTERED', 'Registered'),
+        ('ATTENDED', 'Attended'),
+        ('CANCELLED', 'Cancelled'),
+    ]
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name='registrations'
+    )
+
+    member = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE
+    )
+
+    registration_date = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='REGISTERED'
+    )
+
+    class Meta:
+        unique_together = (
+            'event',
+            'member',
+        )
+
+    def __str__(self):
+        return f"{self.member} - {self.event}"
