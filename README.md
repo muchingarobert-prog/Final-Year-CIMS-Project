@@ -299,4 +299,3 @@ The following features are planned or suggested for future development:
 - Advanced Media Gallery (albums, tagging)
 - Customizable Email Templates
 - Admin Analytics Dashboard
-

@@ -9,8 +9,11 @@ class Committee(models.Model):
     )
 
     description = models.TextField(
-        blank=True,
-        null=True
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
     )
 
     def __str__(self):

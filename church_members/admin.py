@@ -1,31 +1,35 @@
 from django.contrib import admin
-from .models import Member
+from django.contrib.auth.admin import UserAdmin
+from .models import User
 
 
-@admin.register(Member)
-class MemberAdmin(admin.ModelAdmin):
+@admin.register(User)
+class CustomUserAdmin(UserAdmin):
 
     list_display = (
-        'first_name',
-    'last_name',
-    'role',
-    'gender',
-    'phone_number',
-    'email',
-    'date_of_baptism',
-    )
-
-    search_fields = (
+        'username',
         'first_name',
         'last_name',
-        'phone_number',
         'email',
+        'role',
+        'gender',
+        'is_staff',
     )
 
     list_filter = (
         'role',
         'gender',
-        'committees',
+        'is_staff',
+        'is_superuser',
+        'is_active',
+    )
+
+    search_fields = (
+        'username',
+        'first_name',
+        'last_name',
+        'email',
+        'phone_number',
     )
 
     ordering = (
@@ -33,6 +37,18 @@ class MemberAdmin(admin.ModelAdmin):
         'first_name',
     )
 
-    filter_horizontal = (
-        'committees',
+    fieldsets = UserAdmin.fieldsets + (
+        (
+            'Church Information',
+            {
+                'fields': (
+                    'role',
+                    'gender',
+                    'phone_number',
+                    'date_of_birth',
+                    'date_of_baptism',
+                    'date_of_sealing',
+                )
+            },
+        ),
     )

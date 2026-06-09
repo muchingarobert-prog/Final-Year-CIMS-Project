@@ -1,5 +1,5 @@
 from django.db import models
-from church_members.models import Member
+from django.conf import settings
 
 
 class AttendanceSession(models.Model):
@@ -37,7 +37,7 @@ class AttendanceRecord(models.Model):
     ]
 
     member = models.ForeignKey(
-        Member,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
 

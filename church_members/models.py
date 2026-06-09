@@ -1,8 +1,8 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
-from committees.models import Committee
 
 
-class Member(models.Model):
+class User(AbstractUser):
 
     ROLE_CHOICES = [
         ('SUPER_USER', 'Super User'),
@@ -16,14 +16,14 @@ class Member(models.Model):
         ('F', 'Female'),
     ]
 
-    first_name = models.CharField(max_length=50)
-
-    last_name = models.CharField(max_length=50)
-
-    gender = models.CharField(
-        max_length=1,
-        choices=GENDER_CHOICES
-    )
+    YEAR_CHOICES = [
+        ('1', 'First Year'),
+        ('2', 'Second Year'),
+        ('3', 'Third Year'),
+        ('4', 'Fourth Year'),
+        ('5', 'Fifth Year'),
+        ('POSTGRAD', 'Postgraduate'),
+    ]
 
     role = models.CharField(
         max_length=30,
@@ -31,26 +31,80 @@ class Member(models.Model):
         default='MEMBER'
     )
 
-    date_of_birth = models.DateField()
-
-    date_of_baptism = models.DateField()
-
-    committees = models.ManyToManyField(
-        Committee,
+    gender = models.CharField(
+        max_length=1,
+        choices=GENDER_CHOICES,
         blank=True
     )
 
-    phone_number = models.CharField(max_length=20)
+    phone_number = models.CharField(
+        max_length=20,
+        blank=True
+    )
 
-    email = models.EmailField(
-        unique=True,
+    date_of_birth = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    residential_address = models.TextField(
+        blank=True
+    )
+
+    residential_apostle_area = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    school_residential_address = models.TextField(
+        blank=True
+    )
+
+    date_of_baptism = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    date_of_sealing = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    programme_of_study = models.CharField(
+        max_length=200,
+        blank=True
+    )
+
+    year_of_study = models.CharField(
+        max_length=20,
+        choices=YEAR_CHOICES,
+        blank=True
+    )
+
+    church_role_description = models.TextField(
+        blank=True
+    )
+
+    profile_picture = models.ImageField(
+        upload_to='profile_pictures/',
         blank=True,
         null=True
     )
 
-    address = models.TextField(
-        blank=True,
-        null=True
+    bio = models.TextField(
+        blank=True
+    )
+
+    interests_and_skills = models.TextField(
+        blank=True
+    )
+
+    is_profile_public = models.BooleanField(
+        default=False
+    )
+
+    receive_notifications = models.BooleanField(
+        default=True
     )
 
     def __str__(self):
