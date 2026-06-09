@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from committees.models import Committee
 
 
 class User(AbstractUser):
@@ -14,15 +15,6 @@ class User(AbstractUser):
     GENDER_CHOICES = [
         ('M', 'Male'),
         ('F', 'Female'),
-    ]
-
-    YEAR_CHOICES = [
-        ('1', 'First Year'),
-        ('2', 'Second Year'),
-        ('3', 'Third Year'),
-        ('4', 'Fourth Year'),
-        ('5', 'Fifth Year'),
-        ('POSTGRAD', 'Postgraduate'),
     ]
 
     role = models.CharField(
@@ -42,7 +34,21 @@ class User(AbstractUser):
         blank=True
     )
 
+    email = models.EmailField(
+        unique=True
+    )
+
     date_of_birth = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    date_of_baptism = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    date_of_sealing = models.DateField(
         null=True,
         blank=True
     )
@@ -60,29 +66,20 @@ class User(AbstractUser):
         blank=True
     )
 
-    date_of_baptism = models.DateField(
-        null=True,
-        blank=True
-    )
-
-    date_of_sealing = models.DateField(
-        null=True,
-        blank=True
-    )
-
     programme_of_study = models.CharField(
-        max_length=200,
+        max_length=100,
         blank=True
     )
 
-    year_of_study = models.CharField(
-        max_length=20,
-        choices=YEAR_CHOICES,
+    year_of_study = models.PositiveIntegerField(
+        null=True,
         blank=True
     )
 
-    church_role_description = models.TextField(
-        blank=True
+    committees = models.ManyToManyField(
+        Committee,
+        blank=True,
+        related_name='members'
     )
 
     profile_picture = models.ImageField(
@@ -95,12 +92,17 @@ class User(AbstractUser):
         blank=True
     )
 
+    church_role_description = models.CharField(
+        max_length=255,
+        blank=True
+    )
+
     interests_and_skills = models.TextField(
         blank=True
     )
 
     is_profile_public = models.BooleanField(
-        default=False
+        default=True
     )
 
     receive_notifications = models.BooleanField(

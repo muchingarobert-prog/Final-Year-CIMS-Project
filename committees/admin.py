@@ -7,18 +7,14 @@ class CommitteeAdmin(admin.ModelAdmin):
 
     list_display = (
         'name',
-        'member_count',
+        'is_active',
+        'created_at',
+    )
+
+    list_filter = (
+        'is_active',
     )
 
     search_fields = (
         'name',
     )
-
-    ordering = (
-        'name',
-    )
-
-    def member_count(self, obj):
-        return obj.member_set.count()
-
-    member_count.short_description = 'Members'
