@@ -70,6 +70,36 @@ class Event(models.Model):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+
+        is_new = self.pk is None
+
+        super().save(*args, **kwargs)
+
+        if is_new:
+
+            from church_members.models import User
+            from notifications.models import Notification
+
+            users = User.objects.all()
+
+            notifications = []
+
+            for user in users:
+
+                notifications.append(
+                    Notification(
+                        recipient=user,
+                        title=f"New Event: {self.title}",
+                        message=self.description,
+                        notification_type='EVENT'
+                    )
+                )
+
+            Notification.objects.bulk_create(
+                notifications
+            )
+
 
 class EventRegistration(models.Model):
 

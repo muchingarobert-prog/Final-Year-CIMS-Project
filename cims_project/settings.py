@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'attendance',
     'events',
     'announcements',
+    'notifications',
 ]
 
 MIDDLEWARE = [

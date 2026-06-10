@@ -1,3 +1,23 @@
-from django.shortcuts import render
+from rest_framework import viewsets
 
-# Create your views here.
+from .models import (
+    AttendanceSession,
+    AttendanceRecord,
+)
+
+from .serializers import (
+    AttendanceSessionSerializer,
+    AttendanceRecordSerializer,
+)
+
+
+class AttendanceSessionViewSet(viewsets.ModelViewSet):
+
+    queryset = AttendanceSession.objects.all()
+    serializer_class = AttendanceSessionSerializer
+
+
+class AttendanceRecordViewSet(viewsets.ModelViewSet):
+
+    queryset = AttendanceRecord.objects.all()
+    serializer_class = AttendanceRecordSerializer

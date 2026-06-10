@@ -9,19 +9,16 @@ class AttendanceSessionAdmin(admin.ModelAdmin):
         'title',
         'service_type',
         'session_date',
-    )
-
-    list_filter = (
-        'service_type',
-        'session_date',
+        'is_active',
     )
 
     search_fields = (
         'title',
     )
 
-    ordering = (
-        '-session_date',
+    list_filter = (
+        'service_type',
+        'is_active',
     )
 
 
@@ -32,14 +29,15 @@ class AttendanceRecordAdmin(admin.ModelAdmin):
         'member',
         'session',
         'status',
-    )
-
-    list_filter = (
-        'status',
-        'session',
+        'recorded_at',
     )
 
     search_fields = (
         'member__first_name',
         'member__last_name',
+        'member__username',
+    )
+
+    list_filter = (
+        'status',
     )

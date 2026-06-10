@@ -49,3 +49,41 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+
+        is_new = self.pk is None
+
+        super().save(*args, **kwargs)
+
+        if is_new:
+
+            from notifications.models import Notification
+            from church_members.models import User
+
+            if self.target_type == 'ALL':
+
+                users = User.objects.all()
+
+            else:
+
+                users = User.objects.filter(
+                    committees=self.committee
+                )
+
+            notifications = []
+
+            for user in users:
+
+                notifications.append(
+                    Notification(
+                        recipient=user,
+                        title=self.title,
+                        message=self.message,
+                        notification_type='ANNOUNCEMENT'
+                    )
+                )
+
+            Notification.objects.bulk_create(
+                notifications
+            )
