@@ -1,5 +1,7 @@
 from django.contrib import admin
 from .models import Committee
+from .models import CommitteePosition
+from .models import CommitteeMembership
 
 
 @admin.register(Committee)
@@ -11,10 +13,45 @@ class CommitteeAdmin(admin.ModelAdmin):
         'created_at',
     )
 
+    search_fields = (
+        'name',
+    )
+
     list_filter = (
         'is_active',
     )
 
+
+@admin.register(CommitteePosition)
+class CommitteePositionAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'title',
+    )
+
     search_fields = (
-        'name',
+        'title',
+    )
+
+
+@admin.register(CommitteeMembership)
+class CommitteeMembershipAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'user',
+        'committee',
+        'position',
+        'is_active',
+    )
+
+    search_fields = (
+        'user__username',
+        'user__first_name',
+        'user__last_name',
+    )
+
+    list_filter = (
+        'committee',
+        'position',
+        'is_active',
     )

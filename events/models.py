@@ -1,5 +1,5 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 
 class Event(models.Model):
@@ -12,12 +12,11 @@ class Event(models.Model):
     ]
 
     title = models.CharField(
-        max_length=100
+        max_length=200
     )
 
     description = models.TextField(
-        blank=True,
-        null=True
+        blank=True
     )
 
     event_type = models.CharField(
@@ -30,19 +29,42 @@ class Event(models.Model):
     end_date = models.DateTimeField()
 
     location = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True
+        max_length=255,
+        blank=True
     )
 
     registration_required = models.BooleanField(
         default=False
     )
 
+    max_attendees = models.PositiveIntegerField(
+        null=True,
+        blank=True
+    )
+
     attendees = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         through='EventRegistration',
         blank=True
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_events'
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
     )
 
     def __str__(self):

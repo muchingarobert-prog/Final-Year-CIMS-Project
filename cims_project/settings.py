@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'committees',
     'attendance',
     'events',
+    'announcements',
 ]
 
 MIDDLEWARE = [

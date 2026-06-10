@@ -1,27 +1,24 @@
 from django.db import models
+from django.conf import settings
 
 
 class Committee(models.Model):
 
-    COMMITTEE_CHOICES = [
-        ('CATERING', 'Catering Committee'),
-        ('MUSIC', 'Music Committee'),
-        ('ORGANIZING', 'Organizing Committee'),
-        ('FINANCE', 'Finance Committee'),
-        ('DRAPO', 'DRAPO Committee'),
-        ('COMMUNICATION', 'Communication Committee'),
-        ('TESTIFY', 'Testify Committee'),
-        ('FLOWERING', 'Flowering Committee'),
-        ('SECRETARIAL', 'Secretarial Committee'),
-    ]
-
     name = models.CharField(
-        max_length=50,
-        unique=True,
-        choices=COMMITTEE_CHOICES
+        max_length=100,
+        unique=True
     )
 
     description = models.TextField(
+        blank=True
+    )
+
+    purpose = models.TextField(
+        blank=True
+    )
+
+    meeting_schedule = models.CharField(
+        max_length=255,
         blank=True
     )
 
@@ -38,4 +35,62 @@ class Committee(models.Model):
     )
 
     def __str__(self):
-        return self.get_name_display()
+        return self.name
+
+
+class CommitteePosition(models.Model):
+
+    title = models.CharField(
+        max_length=100,
+        unique=True
+    )
+
+    description = models.TextField(
+        blank=True
+    )
+
+    def __str__(self):
+        return self.title
+
+
+class CommitteeMembership(models.Model):
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='committee_memberships'
+    )
+
+    committee = models.ForeignKey(
+        Committee,
+        on_delete=models.CASCADE,
+        related_name='memberships'
+    )
+
+    position = models.ForeignKey(
+        CommitteePosition,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    joined_date = models.DateField(
+        auto_now_add=True
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    notes = models.TextField(
+        blank=True
+    )
+
+    class Meta:
+        unique_together = (
+            'user',
+            'committee',
+        )
+
+    def __str__(self):
+        return f"{self.user} - {self.committee}"
