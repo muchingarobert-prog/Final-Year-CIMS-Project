@@ -11,15 +11,15 @@ class Command(BaseCommand):
 
         committees = [
             "DRAPO",
-            "Music",
-            "Testify",
-            "Communications and Media",
-            "Flowering",
-            "Secretariat",
-            "Organizing",
-            "First Aid",
-            "Catering",
-            "Finance",
+            "MUSIC",
+            "TESTIFY",
+            "COMMUNICATIONS",
+            "FLOWERING",
+            "SECRETARIAT",
+            "ORGANIZING",
+            "FIRST AID",
+            "CATERING",
+            "FINANCE",
         ]
 
         for committee_name in committees:
