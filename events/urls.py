@@ -1,12 +1,13 @@
 from rest_framework.routers import DefaultRouter
 
-from .views import UserViewSet
+from .views import EventViewSet
+
 
 router = DefaultRouter()
 
 router.register(
-    r'users',
-    UserViewSet
+    r'',
+    EventViewSet
 )
 
 urlpatterns = router.urls

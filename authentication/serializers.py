@@ -70,3 +70,24 @@ class ProfileSerializer(serializers.ModelSerializer):
             'groups',
             'user_permissions',
         ]
+
+
+class UserSerializer(
+    serializers.ModelSerializer
+):
+
+    class Meta:
+
+        model = User
+
+        fields = [
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'role',
+            'phone_number',
+            'programme_of_study',
+            'year_of_study',
+        ]        

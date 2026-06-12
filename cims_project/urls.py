@@ -1,10 +1,19 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import (
+    path,
+    include,
+)
 
 urlpatterns = [
+
     path(
         'admin/',
         admin.site.urls
+    ),
+
+    path(
+        'api/auth/',
+        include('authentication.urls')
     ),
 
     path(
@@ -13,7 +22,23 @@ urlpatterns = [
     ),
 
     path(
-        'api/auth/',
-        include('authentication.urls')
+        'api/events/',
+        include('events.urls')
     ),
+
+    path(
+        'api/users/',
+        include('church_members.urls')
+    ),
+
+    path(
+    'api/notifications/',
+    include('notifications.urls')
+    ),
+
+    path(
+    'api/social/',
+    include('social.urls')
+    ),
+
 ]

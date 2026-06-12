@@ -1,5 +1,3 @@
-from django.urls import path, include
-
 from rest_framework.routers import DefaultRouter
 
 from .views import (
@@ -12,28 +10,23 @@ from .views import (
 router = DefaultRouter()
 
 router.register(
-    'posts',
+    r'posts',
     PostViewSet
 )
 
 router.register(
-    'comments',
+    r'comments',
     CommentViewSet
 )
 
 router.register(
-    'prayer-requests',
+    r'prayer-requests',
     PrayerRequestViewSet
 )
 
 router.register(
-    'testimonies',
+    r'testimonies',
     TestimonyViewSet
 )
 
-urlpatterns = [
-    path(
-        '',
-        include(router.urls)
-    ),
-]
+urlpatterns = router.urls
