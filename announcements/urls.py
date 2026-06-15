@@ -3,21 +3,15 @@ from rest_framework.routers import (
 )
 
 from .views import (
-    EventViewSet,
-    EventRegistrationViewSet,
+    AnnouncementViewSet
 )
 
 router = DefaultRouter()
 
 router.register(
     r'',
-    EventViewSet,
-    basename='events'
-)
-
-router.register(
-    r'registrations',
-    EventRegistrationViewSet
+    AnnouncementViewSet,
+    basename='announcements'
 )
 
 urlpatterns = router.urls

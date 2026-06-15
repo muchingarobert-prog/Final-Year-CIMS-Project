@@ -1,6 +1,11 @@
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import (
+    DefaultRouter
+)
 
-from .views import NotificationViewSet
+from .views import (
+    NotificationViewSet
+)
+
 
 router = DefaultRouter()
 

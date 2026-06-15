@@ -1,4 +1,6 @@
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import (
+    DefaultRouter
+)
 
 from .views import (
     AttendanceSessionViewSet,
@@ -8,12 +10,12 @@ from .views import (
 router = DefaultRouter()
 
 router.register(
-    'sessions',
+    r'sessions',
     AttendanceSessionViewSet
 )
 
 router.register(
-    'records',
+    r'records',
     AttendanceRecordViewSet
 )
 

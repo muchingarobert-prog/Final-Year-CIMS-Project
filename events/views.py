@@ -1,3 +1,7 @@
+from datetime import timedelta
+
+from django.utils import timezone
+
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -18,7 +22,9 @@ class EventViewSet(
     viewsets.ModelViewSet
 ):
 
-    queryset = Event.objects.all()
+    queryset = Event.objects.all().order_by(
+        'start_date'
+    )
 
     serializer_class = EventSerializer
 
@@ -50,14 +56,14 @@ class EventViewSet(
             return Response(
                 {
                     "message":
-                    "Already registered."
+                    "Already registered"
                 }
             )
 
         return Response(
             {
                 "message":
-                "Successfully registered."
+                "Successfully registered"
             }
         )
 
@@ -70,8 +76,8 @@ class EventViewSet(
         request
     ):
 
-        events = Event.objects.filter(
-            is_active=True
+        events = Event.objects.all().order_by(
+            'start_date'
         )
 
         serializer = EventSerializer(
@@ -82,3 +88,102 @@ class EventViewSet(
         return Response(
             serializer.data
         )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def upcoming(
+        self,
+        request
+    ):
+
+        events = Event.objects.filter(
+            start_date__gte=timezone.now()
+        ).order_by(
+            'start_date'
+        )
+
+        serializer = EventSerializer(
+            events,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def today(
+        self,
+        request
+    ):
+
+        today = timezone.now().date()
+
+        events = Event.objects.filter(
+            start_date__date=today
+        ).order_by(
+            'start_date'
+        )
+
+        serializer = EventSerializer(
+            events,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def this_week(
+        self,
+        request
+    ):
+
+        today = timezone.now()
+
+        end_of_week = (
+            today +
+            timedelta(days=7)
+        )
+
+        events = Event.objects.filter(
+            start_date__range=(
+                today,
+                end_of_week
+            )
+        ).order_by(
+            'start_date'
+        )
+
+        serializer = EventSerializer(
+            events,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
+
+
+class EventRegistrationViewSet(
+    viewsets.ModelViewSet
+):
+
+    queryset = EventRegistration.objects.all()
+
+    serializer_class = (
+        EventRegistrationSerializer
+    )
+
+    permission_classes = [
+        IsAuthenticated
+    ]

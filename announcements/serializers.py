@@ -1,14 +1,14 @@
 from rest_framework import serializers
 
-from .models import Notification
+from .models import Announcement
 
 
-class NotificationSerializer(
+class AnnouncementSerializer(
     serializers.ModelSerializer
 ):
 
     class Meta:
 
-        model = Notification
+        model = Announcement
 
         fields = '__all__'

@@ -32,13 +32,17 @@ urlpatterns = [
     ),
 
     path(
-    'api/notifications/',
-    include('notifications.urls')
+        'api/notifications/',
+        include('notifications.urls')
     ),
 
     path(
-    'api/social/',
-    include('social.urls')
+        'api/social/',
+        include('social.urls')
     ),
 
+    path(
+        'api/announcements/',
+        include('announcements.urls')
+    ),
 ]
