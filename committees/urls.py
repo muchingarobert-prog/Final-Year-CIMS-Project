@@ -3,7 +3,9 @@ from rest_framework.routers import (
 )
 
 from .views import (
-    CommitteeViewSet
+    CommitteeViewSet,
+    CommitteePositionViewSet,
+    CommitteeMembershipViewSet,
 )
 
 router = DefaultRouter()
@@ -11,7 +13,17 @@ router = DefaultRouter()
 router.register(
     r'',
     CommitteeViewSet,
-    basename='committee'
+    basename='committees'
+)
+
+router.register(
+    r'positions',
+    CommitteePositionViewSet
+)
+
+router.register(
+    r'memberships',
+    CommitteeMembershipViewSet
 )
 
 urlpatterns = router.urls

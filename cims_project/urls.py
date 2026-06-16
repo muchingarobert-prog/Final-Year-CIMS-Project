@@ -45,4 +45,9 @@ urlpatterns = [
         'api/announcements/',
         include('announcements.urls')
     ),
+
+    path(
+    'api/committees/',
+    include('committees.urls')
+    ),
 ]

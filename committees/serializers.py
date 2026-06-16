@@ -2,35 +2,20 @@ from rest_framework import serializers
 
 from .models import (
     Committee,
+    CommitteePosition,
     CommitteeMembership,
 )
 
 
-class CommitteeSerializer(
+class CommitteePositionSerializer(
     serializers.ModelSerializer
 ):
 
-    member_count = serializers.SerializerMethodField()
-
     class Meta:
 
-        model = Committee
+        model = CommitteePosition
 
-        fields = [
-            'id',
-            'name',
-            'description',
-            'purpose',
-            'meeting_schedule',
-            'is_active',
-            'member_count',
-        ]
-
-    def get_member_count(
-        self,
-        obj
-    ):
-        return obj.memberships.count()
+        fields = '__all__'
 
 
 class CommitteeMembershipSerializer(
@@ -40,5 +25,23 @@ class CommitteeMembershipSerializer(
     class Meta:
 
         model = CommitteeMembership
+
+        fields = '__all__'
+
+
+class CommitteeSerializer(
+    serializers.ModelSerializer
+):
+
+    memberships = (
+        CommitteeMembershipSerializer(
+            many=True,
+            read_only=True
+        )
+    )
+
+    class Meta:
+
+        model = Committee
 
         fields = '__all__'
