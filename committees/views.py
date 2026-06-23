@@ -114,6 +114,107 @@ class CommitteeViewSet(
             }
         )
 
+    @action(
+        detail=True,
+        methods=['get']
+    )
+    def members(
+        self,
+        request,
+        pk=None
+    ):
+
+        committee = self.get_object()
+
+        memberships = (
+            CommitteeMembership.objects.filter(
+                committee=committee,
+                is_active=True
+            )
+        )
+
+        serializer = (
+            CommitteeMembershipSerializer(
+                memberships,
+                many=True
+            )
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=True,
+        methods=['get']
+    )
+    def leadership(
+        self,
+        request,
+        pk=None
+    ):
+
+        committee = self.get_object()
+
+        leaders = (
+            CommitteeMembership.objects.filter(
+                committee=committee,
+                position__isnull=False,
+                is_active=True
+            )
+        )
+
+        serializer = (
+            CommitteeMembershipSerializer(
+                leaders,
+                many=True
+            )
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def analytics(
+        self,
+        request
+    ):
+
+        committees = Committee.objects.all()
+
+        data = []
+
+        for committee in committees:
+
+            data.append(
+                {
+                    "id":
+                    committee.id,
+
+                    "name":
+                    committee.name,
+
+                    "members":
+                    committee.memberships.filter(
+                        is_active=True
+                    ).count(),
+
+                    "active":
+                    committee.is_active,
+
+                    "meeting_schedule":
+                    committee.meeting_schedule,
+                }
+            )
+
+        return Response(
+            data
+        )
+
 
 class CommitteePositionViewSet(
     viewsets.ModelViewSet
@@ -147,3 +248,49 @@ class CommitteeMembershipViewSet(
     permission_classes = [
         IsHighPrivilegeOrAbove
     ]
+
+    @action(
+        detail=True,
+        methods=['post']
+    )
+    def deactivate(
+        self,
+        request,
+        pk=None
+    ):
+
+        membership = self.get_object()
+
+        membership.is_active = False
+
+        membership.save()
+
+        return Response(
+            {
+                "message":
+                "Membership deactivated"
+            }
+        )
+
+    @action(
+        detail=True,
+        methods=['post']
+    )
+    def activate(
+        self,
+        request,
+        pk=None
+    ):
+
+        membership = self.get_object()
+
+        membership.is_active = True
+
+        membership.save()
+
+        return Response(
+            {
+                "message":
+                "Membership activated"
+            }
+        )

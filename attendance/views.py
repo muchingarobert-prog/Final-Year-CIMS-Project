@@ -1,6 +1,13 @@
+from django.db.models import Count
+
 from rest_framework import viewsets
+
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+
+from rest_framework.permissions import (
+    IsAuthenticated
+)
+
 from rest_framework.response import Response
 
 from .models import (
@@ -18,8 +25,9 @@ class AttendanceSessionViewSet(
     viewsets.ModelViewSet
 ):
 
-    queryset = AttendanceSession.objects.all().order_by(
-        '-session_date'
+    queryset = (
+        AttendanceSession.objects.all()
+        .order_by('-session_date')
     )
 
     serializer_class = (
@@ -80,23 +88,91 @@ class AttendanceSessionViewSet(
 
         session = self.get_object()
 
+        total = (
+            session.records.count()
+        )
+
+        present = (
+            session.records.filter(
+                status='PRESENT'
+            ).count()
+        )
+
+        absent = (
+            session.records.filter(
+                status='ABSENT'
+            ).count()
+        )
+
+        excused = (
+            session.records.filter(
+                status='EXCUSED'
+            ).count()
+        )
+
+        attendance_rate = 0
+
+        if total > 0:
+
+            attendance_rate = round(
+                (
+                    present / total
+                ) * 100,
+                2
+            )
+
         return Response(
             {
                 "present":
-                session.records.filter(
-                    status='PRESENT'
-                ).count(),
+                present,
 
                 "absent":
-                session.records.filter(
-                    status='ABSENT'
-                ).count(),
+                absent,
 
                 "excused":
-                session.records.filter(
-                    status='EXCUSED'
-                ).count(),
+                excused,
+
+                "attendance_rate":
+                attendance_rate
             }
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def leaderboard(
+        self,
+        request
+    ):
+
+        leaderboard = (
+
+            AttendanceRecord.objects
+
+            .filter(
+                status='PRESENT'
+            )
+
+            .values(
+                'member__id',
+                'member__first_name',
+                'member__last_name'
+            )
+
+            .annotate(
+                total_attendance=Count(
+                    'id'
+                )
+            )
+
+            .order_by(
+                '-total_attendance'
+            )[:10]
+        )
+
+        return Response(
+            leaderboard
         )
 
 
@@ -104,7 +180,9 @@ class AttendanceRecordViewSet(
     viewsets.ModelViewSet
 ):
 
-    queryset = AttendanceRecord.objects.all()
+    queryset = (
+        AttendanceRecord.objects.all()
+    )
 
     serializer_class = (
         AttendanceRecordSerializer
@@ -113,3 +191,75 @@ class AttendanceRecordViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def my_attendance(
+        self,
+        request
+    ):
+
+        records = (
+            AttendanceRecord.objects.filter(
+                member=request.user
+            )
+        )
+
+        serializer = (
+            AttendanceRecordSerializer(
+                records,
+                many=True
+            )
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def my_statistics(
+        self,
+        request
+    ):
+
+        total = (
+            AttendanceRecord.objects.filter(
+                member=request.user
+            ).count()
+        )
+
+        present = (
+            AttendanceRecord.objects.filter(
+                member=request.user,
+                status='PRESENT'
+            ).count()
+        )
+
+        percentage = 0
+
+        if total > 0:
+
+            percentage = round(
+                (
+                    present / total
+                ) * 100,
+                2
+            )
+
+        return Response(
+            {
+                "total_records":
+                total,
+
+                "present":
+                present,
+
+                "attendance_percentage":
+                percentage
+            }
+        )

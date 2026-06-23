@@ -40,9 +40,38 @@ class Committee(models.Model):
 
 class CommitteePosition(models.Model):
 
+    POSITION_TYPES = [
+
+        ('CHAIRPERSON', 'Chairperson'),
+
+        ('VICE_CHAIRPERSON',
+         'Vice Chairperson'),
+
+        ('SECRETARY',
+         'Secretary'),
+
+        ('VICE_SECRETARY',
+         'Vice Secretary'),
+
+        ('TREASURER',
+         'Treasurer'),
+
+        ('VICE_TREASURER',
+         'Vice Treasurer'),
+
+        ('MEMBER',
+         'Member'),
+    ]
+
     title = models.CharField(
         max_length=100,
         unique=True
+    )
+
+    position_type = models.CharField(
+        max_length=30,
+        choices=POSITION_TYPES,
+        default='MEMBER'
     )
 
     description = models.TextField(
@@ -87,10 +116,15 @@ class CommitteeMembership(models.Model):
     )
 
     class Meta:
+
         unique_together = (
             'user',
             'committee',
         )
 
     def __str__(self):
-        return f"{self.user} - {self.committee}"
+
+        return (
+            f"{self.user} - "
+            f"{self.committee}"
+        )

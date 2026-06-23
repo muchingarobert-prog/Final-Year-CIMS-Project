@@ -30,6 +30,7 @@ class AttendanceRecordSerializer(
         self,
         obj
     ):
+
         return (
             f"{obj.member.first_name} "
             f"{obj.member.last_name}"
@@ -40,11 +41,21 @@ class AttendanceSessionSerializer(
     serializers.ModelSerializer
 ):
 
-    total_present = serializers.SerializerMethodField()
+    total_present = (
+        serializers.SerializerMethodField()
+    )
 
-    total_absent = serializers.SerializerMethodField()
+    total_absent = (
+        serializers.SerializerMethodField()
+    )
 
-    total_excused = serializers.SerializerMethodField()
+    total_excused = (
+        serializers.SerializerMethodField()
+    )
+
+    attendance_rate = (
+        serializers.SerializerMethodField()
+    )
 
     class Meta:
 
@@ -60,12 +71,14 @@ class AttendanceSessionSerializer(
             'total_present',
             'total_absent',
             'total_excused',
+            'attendance_rate',
         ]
 
     def get_total_present(
         self,
         obj
     ):
+
         return obj.records.filter(
             status='PRESENT'
         ).count()
@@ -74,6 +87,7 @@ class AttendanceSessionSerializer(
         self,
         obj
     ):
+
         return obj.records.filter(
             status='ABSENT'
         ).count()
@@ -82,6 +96,28 @@ class AttendanceSessionSerializer(
         self,
         obj
     ):
+
         return obj.records.filter(
             status='EXCUSED'
         ).count()
+
+    def get_attendance_rate(
+        self,
+        obj
+    ):
+
+        total = obj.records.count()
+
+        if total == 0:
+            return 0
+
+        present = obj.records.filter(
+            status='PRESENT'
+        ).count()
+
+        return round(
+            (
+                present / total
+            ) * 100,
+            2
+        )

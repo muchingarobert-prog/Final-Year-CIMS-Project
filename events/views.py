@@ -44,6 +44,21 @@ class EventViewSet(
 
         event = self.get_object()
 
+        if (
+            event.max_attendees
+            and
+            event.registrations.count()
+            >= event.max_attendees
+        ):
+
+            return Response(
+                {
+                    "message":
+                    "Event is full"
+                },
+                status=400
+            )
+
         registration, created = (
             EventRegistration.objects.get_or_create(
                 event=event,
@@ -64,6 +79,123 @@ class EventViewSet(
             {
                 "message":
                 "Successfully registered"
+            }
+        )
+
+    @action(
+        detail=True,
+        methods=['post']
+    )
+    def cancel_registration(
+        self,
+        request,
+        pk=None
+    ):
+
+        event = self.get_object()
+
+        deleted, _ = (
+            EventRegistration.objects.filter(
+                event=event,
+                member=request.user
+            ).delete()
+        )
+
+        return Response(
+            {
+                "removed":
+                deleted > 0
+            }
+        )
+
+    @action(
+        detail=True,
+        methods=['get']
+    )
+    def attendees(
+        self,
+        request,
+        pk=None
+    ):
+
+        event = self.get_object()
+
+        registrations = (
+            EventRegistration.objects.filter(
+                event=event
+            )
+        )
+
+        serializer = (
+            EventRegistrationSerializer(
+                registrations,
+                many=True
+            )
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def my_registrations(
+        self,
+        request
+    ):
+
+        registrations = (
+            EventRegistration.objects.filter(
+                member=request.user
+            )
+        )
+
+        serializer = (
+            EventRegistrationSerializer(
+                registrations,
+                many=True
+            )
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def statistics(
+        self,
+        request
+    ):
+
+        total_events = (
+            Event.objects.count()
+        )
+
+        upcoming_events = (
+            Event.objects.filter(
+                start_date__gte=timezone.now()
+            ).count()
+        )
+
+        registrations = (
+            EventRegistration.objects.count()
+        )
+
+        return Response(
+            {
+                "total_events":
+                total_events,
+
+                "upcoming_events":
+                upcoming_events,
+
+                "total_registrations":
+                registrations,
             }
         )
 

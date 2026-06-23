@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from .models import (
     Post,
@@ -22,15 +22,70 @@ class PostViewSet(
     viewsets.ModelViewSet
 ):
 
-    queryset = Post.objects.all().order_by(
-        '-created_at'
+    queryset = (
+        Post.objects.filter(
+            is_active=True
+        )
+        .order_by(
+            '-created_at'
+        )
     )
 
-    serializer_class = PostSerializer
+    serializer_class = (
+        PostSerializer
+    )
 
     permission_classes = [
         IsAuthenticated
     ]
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def statistics(
+        self,
+        request
+    ):
+
+        return Response(
+            {
+                "posts":
+                Post.objects.count(),
+
+                "comments":
+                Comment.objects.count(),
+
+                "prayer_requests":
+                PrayerRequest.objects.count(),
+
+                "testimonies":
+                Testimony.objects.count()
+            }
+        )
+
+    @action(
+        detail=True,
+        methods=['post']
+    )
+    def deactivate(
+        self,
+        request,
+        pk=None
+    ):
+
+        post = self.get_object()
+
+        post.is_active = False
+
+        post.save()
+
+        return Response(
+            {
+                "message":
+                "Post deactivated"
+            }
+        )
 
 
 class CommentViewSet(
@@ -39,7 +94,9 @@ class CommentViewSet(
 
     queryset = Comment.objects.all()
 
-    serializer_class = CommentSerializer
+    serializer_class = (
+        CommentSerializer
+    )
 
     permission_classes = [
         IsAuthenticated
@@ -50,15 +107,43 @@ class PrayerRequestViewSet(
     viewsets.ModelViewSet
 ):
 
-    queryset = PrayerRequest.objects.all().order_by(
-        '-created_at'
+    queryset = (
+        PrayerRequest.objects.all()
+        .order_by(
+            '-created_at'
+        )
     )
 
-    serializer_class = PrayerRequestSerializer
+    serializer_class = (
+        PrayerRequestSerializer
+    )
 
     permission_classes = [
         IsAuthenticated
     ]
+
+    @action(
+        detail=True,
+        methods=['post']
+    )
+    def answered(
+        self,
+        request,
+        pk=None
+    ):
+
+        prayer = self.get_object()
+
+        prayer.is_answered = True
+
+        prayer.save()
+
+        return Response(
+            {
+                "message":
+                "Prayer request marked answered"
+            }
+        )
 
 
 class TestimonyViewSet(
@@ -67,7 +152,9 @@ class TestimonyViewSet(
 
     queryset = Testimony.objects.all()
 
-    serializer_class = TestimonySerializer
+    serializer_class = (
+        TestimonySerializer
+    )
 
     permission_classes = [
         IsAuthenticated
@@ -94,4 +181,30 @@ class TestimonyViewSet(
                 "message":
                 "Testimony approved"
             }
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def approved(
+        self,
+        request
+    ):
+
+        testimonies = (
+            Testimony.objects.filter(
+                approved=True
+            )
+        )
+
+        serializer = (
+            TestimonySerializer(
+                testimonies,
+                many=True
+            )
+        )
+
+        return Response(
+            serializer.data
         )

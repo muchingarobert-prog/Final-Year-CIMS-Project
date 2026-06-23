@@ -40,6 +40,10 @@ INSTALLED_APPS = [
     'social',
     'accounts',
     'authentication',
+    'dashboard',
+    'reports',
+    'django_extensions',
+    'finances',
 ]
 
 

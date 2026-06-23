@@ -1,4 +1,6 @@
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import (
+    BasePermission
+)
 
 
 class IsSuperUser(
@@ -13,7 +15,8 @@ class IsSuperUser(
 
         return (
             request.user.is_authenticated
-            and request.user.role == 'SUPER_USER'
+            and request.user.role ==
+            'SUPER_USER'
         )
 
 
@@ -53,4 +56,19 @@ class IsHighPrivilegeOrAbove(
                 'ADMIN_USER',
                 'HIGH_PRIVILEGE_USER'
             ]
+        )
+
+
+class IsMemberOrAbove(
+    BasePermission
+):
+
+    def has_permission(
+        self,
+        request,
+        view
+    ):
+
+        return (
+            request.user.is_authenticated
         )

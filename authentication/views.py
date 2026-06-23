@@ -1,14 +1,35 @@
+from django.db.models import Q
+
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from church_members.models import User
 
+from committees.models import (
+    CommitteeMembership
+)
+
+from notifications.models import (
+    Notification
+)
+
+from events.models import (
+    EventRegistration
+)
+
+from attendance.models import (
+    AttendanceRecord
+)
+
 from .serializers import (
     RegisterSerializer,
     UserSerializer,
 )
+
 
 class RegisterView(
     generics.CreateAPIView
@@ -16,9 +37,8 @@ class RegisterView(
 
     queryset = User.objects.all()
 
-    
     serializer_class = (
-    RegisterSerializer
+        RegisterSerializer
     )
 
 
@@ -55,9 +75,18 @@ class SearchUsersView(
         )
 
         return User.objects.filter(
-            first_name__icontains=query
-        ) | User.objects.filter(
-            last_name__icontains=query
+            Q(
+                first_name__icontains=query
+            ) |
+            Q(
+                last_name__icontains=query
+            ) |
+            Q(
+                username__icontains=query
+            ) |
+            Q(
+                email__icontains=query
+            )
         )
 
 
@@ -76,18 +105,49 @@ class DashboardView(
 
         user = request.user
 
+        attendance_count = (
+            AttendanceRecord.objects.filter(
+                member=user
+            ).count()
+        )
+
+        committee_count = (
+            CommitteeMembership.objects.filter(
+                user=user,
+                is_active=True
+            ).count()
+        )
+
+        event_count = (
+            EventRegistration.objects.filter(
+                member=user
+            ).count()
+        )
+
+        unread_notifications = (
+            Notification.objects.filter(
+                recipient=user,
+                is_read=False
+            ).count()
+        )
+
         return Response(
             {
-                "username":
-                    user.username,
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                    "role": user.role,
+                },
 
-                "email":
-                    user.email,
-
-                "role":
-                    user.role,
-
-                "committees":
-                    user.committees.count(),
+                "statistics": {
+                    "committees": committee_count,
+                    "events": event_count,
+                    "attendance": attendance_count,
+                    "unread_notifications":
+                    unread_notifications,
+                }
             }
         )

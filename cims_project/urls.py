@@ -50,4 +50,19 @@ urlpatterns = [
     'api/committees/',
     include('committees.urls')
     ),
+
+    path(
+    'api/dashboard/',
+    include('dashboard.urls')
+    ),
+
+    path(
+    'api/reports/',
+    include('reports.urls')
+    ),
+
+   path(
+     'api/finances/',
+     include('finances.urls')
+   ),
 ]
