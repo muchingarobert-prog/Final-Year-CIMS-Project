@@ -1,7 +1,13 @@
-from django.http import JsonResponse
+from django.db.models import Count
+from django.db.models import Sum
 
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated
+)
+from rest_framework.response import Response
+
+from church_members.models import User
 
 from attendance.models import (
     AttendanceRecord,
@@ -18,7 +24,10 @@ from events.models import (
     EventRegistration
 )
 
-from church_members.models import User
+from finances.models import (
+    Income,
+    Expense
+)
 
 
 class ReportsView(
@@ -34,10 +43,35 @@ class ReportsView(
         request
     ):
 
-        return JsonResponse(
+        total_members = (
+            User.objects.count()
+        )
+
+        total_committees = (
+            Committee.objects.count()
+        )
+
+        total_events = (
+            Event.objects.count()
+        )
+
+        total_sessions = (
+            AttendanceSession.objects.count()
+        )
+
+        return Response(
             {
-                "message":
-                "Reports API"
+                "members":
+                total_members,
+
+                "committees":
+                total_committees,
+
+                "events":
+                total_events,
+
+                "attendance_sessions":
+                total_sessions,
             }
         )
 
@@ -55,63 +89,41 @@ class AttendanceReportView(
         request
     ):
 
-        total_sessions = (
-            AttendanceSession.objects.count()
-        )
-
         total_records = (
             AttendanceRecord.objects.count()
         )
 
-        total_present = (
+        present = (
             AttendanceRecord.objects.filter(
                 status='PRESENT'
             ).count()
         )
 
-        total_absent = (
+        absent = (
             AttendanceRecord.objects.filter(
                 status='ABSENT'
             ).count()
         )
 
-        total_excused = (
+        excused = (
             AttendanceRecord.objects.filter(
                 status='EXCUSED'
             ).count()
         )
 
-        attendance_rate = 0
-
-        if total_records > 0:
-
-            attendance_rate = round(
-                (
-                    total_present /
-                    total_records
-                ) * 100,
-                2
-            )
-
-        return JsonResponse(
+        return Response(
             {
-                "total_sessions":
-                total_sessions,
-
                 "total_records":
                 total_records,
 
                 "present":
-                total_present,
+                present,
 
                 "absent":
-                total_absent,
+                absent,
 
                 "excused":
-                total_excused,
-
-                "attendance_rate":
-                attendance_rate
+                excused,
             }
         )
 
@@ -130,30 +142,32 @@ class CommitteeReportView(
     ):
 
         committees = (
-            Committee.objects.count()
+            Committee.objects.annotate(
+                total_members=Count(
+                    'memberships'
+                )
+            )
         )
 
-        memberships = (
-            CommitteeMembership.objects.count()
-        )
+        data = []
 
-        active_committees = (
-            Committee.objects.filter(
-                is_active=True
-            ).count()
-        )
+        for committee in committees:
 
-        return JsonResponse(
-            {
-                "committees":
-                committees,
+            data.append(
+                {
+                    "id":
+                    committee.id,
 
-                "memberships":
-                memberships,
+                    "name":
+                    committee.name,
 
-                "active_committees":
-                active_committees
-            }
+                    "members":
+                    committee.total_members,
+                }
+            )
+
+        return Response(
+            data
         )
 
 
@@ -174,26 +188,17 @@ class EventReportView(
             Event.objects.count()
         )
 
-        registrations = (
+        total_registrations = (
             EventRegistration.objects.count()
         )
 
-        upcoming_events = (
-            Event.objects.filter(
-                is_active=True
-            ).count()
-        )
-
-        return JsonResponse(
+        return Response(
             {
                 "events":
                 total_events,
 
                 "registrations":
-                registrations,
-
-                "upcoming_events":
-                upcoming_events
+                total_registrations,
             }
         )
 
@@ -215,45 +220,73 @@ class MemberReportView(
             User.objects.count()
         )
 
-        super_users = (
+        male_members = (
             User.objects.filter(
-                role='SUPER_USER'
+                gender='M'
             ).count()
         )
 
-        admin_users = (
+        female_members = (
             User.objects.filter(
-                role='ADMIN_USER'
+                gender='F'
             ).count()
         )
 
-        high_privilege = (
-            User.objects.filter(
-                role='HIGH_PRIVILEGE_USER'
-            ).count()
-        )
-
-        members = (
-            User.objects.filter(
-                role='MEMBER'
-            ).count()
-        )
-
-        return JsonResponse(
+        return Response(
             {
                 "total_members":
                 total_members,
 
-                "super_users":
-                super_users,
+                "male_members":
+                male_members,
 
-                "admin_users":
-                admin_users,
+                "female_members":
+                female_members,
+            }
+        )
 
-                "high_privilege_users":
-                high_privilege,
 
-                "members":
-                members
+class FinanceReportView(
+    APIView
+):
+
+    permission_classes = [
+        IsAuthenticated
+    ]
+
+    def get(
+        self,
+        request
+    ):
+
+        total_income = (
+            Income.objects.aggregate(
+                total=Sum('amount')
+            )['total'] or 0
+        )
+
+        total_expenses = (
+            Expense.objects.filter(
+                status='APPROVED'
+            ).aggregate(
+                total=Sum('amount')
+            )['total'] or 0
+        )
+
+        balance = (
+            total_income -
+            total_expenses
+        )
+
+        return Response(
+            {
+                "income":
+                total_income,
+
+                "expenses":
+                total_expenses,
+
+                "balance":
+                balance,
             }
         )

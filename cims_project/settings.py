@@ -44,6 +44,9 @@ INSTALLED_APPS = [
     'reports',
     'django_extensions',
     'finances',
+    'audit',
+    'documents',
+    'visitors',
 ]
 
 

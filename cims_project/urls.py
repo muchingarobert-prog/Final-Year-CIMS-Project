@@ -1,8 +1,13 @@
 from django.contrib import admin
+
 from django.urls import (
     path,
     include,
 )
+
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 urlpatterns = [
 
@@ -47,22 +52,42 @@ urlpatterns = [
     ),
 
     path(
-    'api/committees/',
-    include('committees.urls')
+        'api/committees/',
+        include('committees.urls')
     ),
 
     path(
-    'api/dashboard/',
-    include('dashboard.urls')
+        'api/dashboard/',
+        include('dashboard.urls')
     ),
 
     path(
-    'api/reports/',
-    include('reports.urls')
+        'api/reports/',
+        include('reports.urls')
     ),
 
-   path(
-     'api/finances/',
-     include('finances.urls')
-   ),
+    path(
+        'api/finances/',
+        include('finances.urls')
+    ),
+
+    path(
+        'api/audit/',
+        include('audit.urls')
+    ),
+
+    path(
+        'api/documents/',
+        include('documents.urls')
+    ),
+
+    path(
+       'api/visitors/',
+       include('visitors.urls')
+    ),
 ]
+
+urlpatterns += static(
+    settings.MEDIA_URL,
+    document_root=settings.MEDIA_ROOT
+)

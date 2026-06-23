@@ -6,6 +6,7 @@ from .views import (
     CommitteeReportView,
     EventReportView,
     MemberReportView,
+    FinanceReportView,
 )
 
 urlpatterns = [
@@ -33,5 +34,10 @@ urlpatterns = [
     path(
         'members/',
         MemberReportView.as_view()
+    ),
+
+    path(
+        'finances/',
+        FinanceReportView.as_view()
     ),
 ]
