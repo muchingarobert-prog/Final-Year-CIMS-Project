@@ -3,7 +3,9 @@ from rest_framework import serializers
 from church_members.models import User
 
 
-class RegisterSerializer(serializers.ModelSerializer):
+class RegisterSerializer(
+    serializers.ModelSerializer
+):
 
     password = serializers.CharField(
         write_only=True
@@ -39,7 +41,10 @@ class RegisterSerializer(serializers.ModelSerializer):
             'date_of_sealing',
         ]
 
-    def create(self, validated_data):
+    def create(
+        self,
+        validated_data
+    ):
 
         password = validated_data.pop(
             'password'
@@ -58,7 +63,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class ProfileSerializer(
+    serializers.ModelSerializer
+):
+
+    committees = serializers.StringRelatedField(
+        many=True,
+        read_only=True
+    )
 
     class Meta:
 
@@ -81,13 +93,19 @@ class UserSerializer(
         model = User
 
         fields = [
+
             'id',
             'username',
             'first_name',
             'last_name',
             'email',
+
             'role',
+
+            'gender',
+
             'phone_number',
+
             'programme_of_study',
             'year_of_study',
-        ]        
+        ]

@@ -82,8 +82,8 @@ urlpatterns = [
     ),
 
     path(
-       'api/visitors/',
-       include('visitors.urls')
+        'api/visitors/',
+        include('visitors.urls')
     ),
 ]
 

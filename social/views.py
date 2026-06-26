@@ -4,15 +4,23 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import (
+    
     Post,
     Comment,
+    CommentReply,
+    PostReaction,
+    MediaGallery,
     PrayerRequest,
     Testimony,
 )
 
 from .serializers import (
+    
     PostSerializer,
     CommentSerializer,
+    CommentReplySerializer,
+    PostReactionSerializer,
+    MediaGallerySerializer,
     PrayerRequestSerializer,
     TestimonySerializer,
 )
@@ -102,6 +110,52 @@ class CommentViewSet(
         IsAuthenticated
     ]
 
+class CommentReplyViewSet(
+    viewsets.ModelViewSet
+):
+
+    queryset = CommentReply.objects.all()
+
+    serializer_class = (
+        CommentReplySerializer
+    )
+
+    permission_classes = [
+        IsAuthenticated
+    ]
+
+
+class PostReactionViewSet(
+    viewsets.ModelViewSet
+):
+
+    queryset = PostReaction.objects.all()
+
+    serializer_class = (
+        PostReactionSerializer
+    )
+
+    permission_classes = [
+        IsAuthenticated
+    ]
+
+
+class MediaGalleryViewSet(
+    viewsets.ModelViewSet
+):
+
+    queryset = (
+        MediaGallery.objects.all()
+        .order_by('-uploaded_at')
+    )
+
+    serializer_class = (
+        MediaGallerySerializer
+    )
+
+    permission_classes = [
+        IsAuthenticated
+    ]
 
 class PrayerRequestViewSet(
     viewsets.ModelViewSet

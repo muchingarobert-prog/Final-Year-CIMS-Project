@@ -7,6 +7,10 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from rest_framework_simplejwt.tokens import (
+    RefreshToken
+)
+
 from church_members.models import User
 
 from committees.models import (
@@ -28,6 +32,7 @@ from attendance.models import (
 from .serializers import (
     RegisterSerializer,
     UserSerializer,
+     ProfileSerializer,
 )
 
 
@@ -46,16 +51,19 @@ class ProfileView(
     generics.RetrieveUpdateAPIView
 ):
 
-    serializer_class = UserSerializer
+    serializer_class = (
+        ProfileSerializer
+    )
 
     permission_classes = [
         IsAuthenticated
     ]
 
-    def get_object(self):
+    def get_object(
+        self
+    ):
 
         return self.request.user
-
 
 class SearchUsersView(
     generics.ListAPIView
@@ -151,3 +159,46 @@ class DashboardView(
                 }
             }
         )
+
+
+class LogoutView(
+    APIView
+):
+
+    permission_classes = [
+        IsAuthenticated
+    ]
+
+    def post(
+        self,
+        request
+    ):
+
+        try:
+
+            refresh_token = request.data.get(
+                'refresh'
+            )
+
+            token = RefreshToken(
+                refresh_token
+            )
+
+            token.blacklist()
+
+            return Response(
+                {
+                    "message":
+                    "Logout successful"
+                }
+            )
+
+        except Exception:
+
+            return Response(
+                {
+                    "message":
+                    "Invalid token"
+                },
+                status=400
+            )

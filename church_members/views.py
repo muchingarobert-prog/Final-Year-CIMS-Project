@@ -71,6 +71,18 @@ class UserViewSet(viewsets.ModelViewSet):
             role='MEMBER'
         ).count()
 
+        baptized = User.objects.exclude(
+            date_of_baptism=None
+        ).count()
+
+        sealed = User.objects.exclude(
+            date_of_sealing=None
+        ).count()
+
+        students = User.objects.exclude(
+            programme_of_study=''
+        ).count()
+
         return Response(
             {
                 "total_members": total_members,
@@ -78,6 +90,9 @@ class UserViewSet(viewsets.ModelViewSet):
                 "female_members": female_count,
                 "members": members,
                 "administrators": admins,
+                "baptized_members": baptized,
+                "sealed_members": sealed,
+                "students": students,
             }
         )
 
@@ -103,7 +118,9 @@ class UserViewSet(viewsets.ModelViewSet):
                 }
             )
 
-        return Response(data)
+        return Response(
+            data
+        )
 
     @action(
         detail=False,
@@ -168,4 +185,132 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(
             serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def member_directory(self, request):
+
+        users = User.objects.order_by(
+            'first_name',
+            'last_name'
+        )
+
+        serializer = UserSerializer(
+            users,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def leaders(self, request):
+
+        users = User.objects.filter(
+            role__in=[
+                'SUPER_USER',
+                'ADMIN_USER',
+                'HIGH_PRIVILEGE_USER'
+            ]
+        )
+
+        serializer = UserSerializer(
+            users,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def students(self, request):
+
+        users = User.objects.exclude(
+            programme_of_study=''
+        )
+
+        serializer = UserSerializer(
+            users,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def baptized(self, request):
+
+        users = User.objects.exclude(
+            date_of_baptism=None
+        )
+
+        serializer = UserSerializer(
+            users,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def sealed(self, request):
+
+        users = User.objects.exclude(
+            date_of_sealing=None
+        )
+
+        serializer = UserSerializer(
+            users,
+            many=True
+        )
+
+        return Response(
+            serializer.data
+        )
+
+    @action(
+        detail=False,
+        methods=['get']
+    )
+    def committee_breakdown(self, request):
+
+        users = User.objects.annotate(
+            committee_total=Count(
+                'committees'
+            )
+        )
+
+        data = []
+
+        for user in users:
+
+            data.append(
+                {
+                    "id": user.id,
+                    "name": f"{user.first_name} {user.last_name}",
+                    "committee_total": user.committee_total
+                }
+            )
+
+        return Response(
+            data
         )

@@ -11,6 +11,9 @@ class Document(models.Model):
         ('CONSTITUTION', 'Constitution'),
         ('REPORT', 'Report'),
         ('GUIDELINE', 'Guideline'),
+        ('FINANCIAL', 'Financial Document'),
+        ('CIRCULAR', 'Circular'),
+        ('POLICY', 'Policy'),
         ('OTHER', 'Other'),
     ]
 
@@ -42,6 +45,14 @@ class Document(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True
+    )
+
+    version = models.PositiveIntegerField(
+        default=1
+    )
+
+    download_count = models.PositiveIntegerField(
+        default=0
     )
 
     is_public = models.BooleanField(
