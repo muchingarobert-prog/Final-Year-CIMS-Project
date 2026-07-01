@@ -78,8 +78,7 @@ Nine specialized committees:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Akende1/UNZANAC-Management-System.git
-cd UNZANAC-Management-System
+https://github.com/muchingarobert-prog/Final-Year-CIMS-Project.git
 ```
 
 ### 2. Create Virtual Environment
