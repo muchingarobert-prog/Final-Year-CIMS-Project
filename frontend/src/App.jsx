@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
 import Sidebar from './components/Sidebar';
@@ -7,23 +8,26 @@ import RegisterPage from './pages/RegisterPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import CommitteesPage from './pages/CommitteesPage.jsx';
 import EventsPage from './pages/EventsPage.jsx';
+import MembersPage from './pages/MembersPage.jsx';
+import AnnouncementsPage from './pages/AnnouncementsPage.jsx';
 
 function App() {
-  const token = localStorage.getItem('cims_demo_access_token');
-  const isLoggedIn = !!token;
+  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(localStorage.getItem('cims_access_token')));
 
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="app-container">
         {isLoggedIn ? (
           <>
-            <Sidebar />
+            <Sidebar onLogout={() => setIsLoggedIn(false)} />
             <div className="main-area">
               <main className="content-area">
                 <Routes>
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/events" element={<EventsPage />} />
                   <Route path="/committees" element={<CommitteesPage />} />
+                  <Route path="/members" element={<MembersPage />} />
+                  <Route path="/announcements" element={<AnnouncementsPage />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </main>

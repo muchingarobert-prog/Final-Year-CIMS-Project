@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -35,8 +35,8 @@ export default function LoginPage() {
       }
 
       if (data.access) {
-        localStorage.setItem('cims_demo_access_token', data.access);
-        localStorage.setItem('cims_demo_refresh_token', data.refresh);
+        localStorage.setItem('cims_access_token', data.access);
+        localStorage.setItem('cims_refresh_token', data.refresh);
         navigate('/dashboard');
       } else {
         throw new Error('No token received from server');

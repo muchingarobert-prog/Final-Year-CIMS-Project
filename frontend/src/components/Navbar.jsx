@@ -2,10 +2,11 @@ import { Link, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('cims_demo_access_token');
+  const token = localStorage.getItem('cims_access_token');
 
   const handleLogout = () => {
-    localStorage.removeItem('cims_demo_access_token');
+    localStorage.removeItem('cims_access_token');
+    localStorage.removeItem('cims_refresh_token');
     navigate('/');
   };
 

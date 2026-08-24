@@ -1,7 +1,10 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-export default function Sidebar() {
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
+export default function Sidebar({ onLogout }) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -11,6 +14,25 @@ export default function Sidebar() {
     { path: '/attendance', label: 'Attendance', icon: '✅' },
     { path: '/announcements', label: 'Announcements', icon: '📢' },
   ];
+
+  const handleLogout = async () => {
+    const refresh = localStorage.getItem('cims_refresh_token');
+    const token = localStorage.getItem('cims_access_token');
+    if (refresh && token) {
+      await fetch(`${API_BASE}/api/auth/logout/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh }),
+      }).catch(() => {});
+    }
+    localStorage.removeItem('cims_access_token');
+    localStorage.removeItem('cims_refresh_token');
+    onLogout();
+    navigate('/');
+  };
 
   return (
     <aside className="sidebar">
@@ -30,6 +52,10 @@ export default function Sidebar() {
           </Link>
         ))}
       </nav>
+      <button type="button" className="sidebar-link sidebar-logout" onClick={handleLogout}>
+        <span className="sidebar-icon">↪</span>
+        <span className="sidebar-text">Logout</span>
+      </button>
     </aside>
   );
 }

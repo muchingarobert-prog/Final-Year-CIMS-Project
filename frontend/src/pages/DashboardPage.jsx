@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export default function DashboardPage() {
   const [userData, setUserData] = useState(null);
@@ -10,7 +10,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('cims_demo_access_token');
+    const token = localStorage.getItem('cims_access_token');
     if (!token) {
       navigate('/login');
       return;

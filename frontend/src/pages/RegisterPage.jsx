@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -10,7 +10,7 @@ export default function RegisterPage() {
     password: '',
     first_name: '',
     last_name: '',
-    gender: 'MALE',
+    gender: 'M',
     date_of_birth: '',
   });
   const [error, setError] = useState('');
@@ -158,9 +158,8 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 required
               >
-                <option value="MALE">Male</option>
-                <option value="FEMALE">Female</option>
-                <option value="OTHER">Other</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
               </select>
             </div>
           </div>
