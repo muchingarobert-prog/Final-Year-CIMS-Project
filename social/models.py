@@ -4,6 +4,12 @@ from django.conf import settings
 
 class Post(models.Model):
 
+    PRIVACY_CHOICES = [
+        ('PUBLIC', 'Public'),
+        ('MEMBERS', 'Members Only'),
+        ('PRIVATE', 'Only Me'),
+    ]
+
     title = models.CharField(
         max_length=200
     )
@@ -14,6 +20,12 @@ class Post(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='posts'
+    )
+
+    privacy = models.CharField(
+        max_length=20,
+        choices=PRIVACY_CHOICES,
+        default='MEMBERS'
     )
 
     is_active = models.BooleanField(

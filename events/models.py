@@ -11,6 +11,23 @@ class Event(models.Model):
         ('SPECIAL', 'Special Event'),
     ]
 
+    RECURRENCE_CHOICES = [
+        ('NONE', 'None'),
+        ('DAILY', 'Daily'),
+        ('WEEKLY', 'Weekly'),
+        ('MONTHLY', 'Monthly'),
+    ]
+
+    DAY_OF_WEEK_CHOICES = [
+        ('MONDAY', 'Monday'),
+        ('TUESDAY', 'Tuesday'),
+        ('WEDNESDAY', 'Wednesday'),
+        ('THURSDAY', 'Thursday'),
+        ('FRIDAY', 'Friday'),
+        ('SATURDAY', 'Saturday'),
+        ('SUNDAY', 'Sunday'),
+    ]
+
     title = models.CharField(
         max_length=200
     )
@@ -24,9 +41,30 @@ class Event(models.Model):
         choices=EVENT_TYPES
     )
 
-    start_date = models.DateTimeField()
+    event_date = models.DateTimeField(
+        help_text='Enter the date and time for the event. Example: 2026-07-06 09:00 or 2026-07-06T09:00:00Z'
+    )
 
-    end_date = models.DateTimeField()
+    recurrence = models.CharField(
+        max_length=20,
+        choices=RECURRENCE_CHOICES,
+        default='NONE',
+        help_text='Set a repeat pattern for events that occur on the same schedule each week or day.',
+    )
+
+    recurrence_day = models.CharField(
+        max_length=10,
+        choices=DAY_OF_WEEK_CHOICES,
+        blank=True,
+        default='',
+        help_text='Use this for weekly recurring events to specify the repeating weekday.',
+    )
+
+    recurrence_end_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text='Optional end date for recurring events. Leave blank for an open recurrence.',
+    )
 
     location = models.CharField(
         max_length=255,

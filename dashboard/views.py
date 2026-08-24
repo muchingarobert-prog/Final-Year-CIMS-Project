@@ -73,7 +73,7 @@ class DashboardView(
 
         upcoming_events = (
             Event.objects.filter(
-                start_date__gte=timezone.now()
+                event_date__gte=timezone.now()
             ).count()
         )
 

@@ -1,5 +1,8 @@
+from PIL import Image
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
 from committees.models import Committee
 
 
@@ -109,5 +112,30 @@ class User(AbstractUser):
         default=True
     )
 
+    def save(self, *args, **kwargs):
+
+        super().save(*args, **kwargs)
+
+        if self.profile_picture:
+
+            image = Image.open(
+                self.profile_picture.path
+            )
+
+            image = image.convert("RGB")
+
+            image.thumbnail(
+                (300, 300)
+            )
+
+            image.save(
+                self.profile_picture.path,
+                optimize=True,
+                quality=85
+            )
+
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+
+        return (
+            f"{self.first_name} {self.last_name}"
+        )

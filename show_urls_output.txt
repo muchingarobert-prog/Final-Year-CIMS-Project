@@ -1,0 +1,369 @@
+/admin/	django.contrib.admin.sites.index	admin:index
+/admin/<app_label>/	django.contrib.admin.sites.app_index	admin:app_list
+/admin/<url>	django.contrib.admin.sites.catch_all_view
+/admin/announcements/announcement/	django.contrib.admin.options.changelist_view	admin:announcements_announcement_changelist
+/admin/announcements/announcement/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/announcements/announcement/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:announcements_announcement_change
+/admin/announcements/announcement/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:announcements_announcement_delete
+/admin/announcements/announcement/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:announcements_announcement_history
+/admin/announcements/announcement/add/	django.contrib.admin.options.add_view	admin:announcements_announcement_add
+/admin/attendance/attendancerecord/	django.contrib.admin.options.changelist_view	admin:attendance_attendancerecord_changelist
+/admin/attendance/attendancerecord/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/attendance/attendancerecord/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:attendance_attendancerecord_change
+/admin/attendance/attendancerecord/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:attendance_attendancerecord_delete
+/admin/attendance/attendancerecord/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:attendance_attendancerecord_history
+/admin/attendance/attendancerecord/add/	django.contrib.admin.options.add_view	admin:attendance_attendancerecord_add
+/admin/attendance/attendancesession/	django.contrib.admin.options.changelist_view	admin:attendance_attendancesession_changelist
+/admin/attendance/attendancesession/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/attendance/attendancesession/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:attendance_attendancesession_change
+/admin/attendance/attendancesession/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:attendance_attendancesession_delete
+/admin/attendance/attendancesession/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:attendance_attendancesession_history
+/admin/attendance/attendancesession/add/	django.contrib.admin.options.add_view	admin:attendance_attendancesession_add
+/admin/auth/group/	django.contrib.admin.options.changelist_view	admin:auth_group_changelist
+/admin/auth/group/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/auth/group/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:auth_group_change
+/admin/auth/group/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:auth_group_delete
+/admin/auth/group/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:auth_group_history
+/admin/auth/group/add/	django.contrib.admin.options.add_view	admin:auth_group_add
+/admin/autocomplete/	django.contrib.admin.sites.autocomplete_view	admin:autocomplete
+/admin/church_members/user/	django.contrib.admin.options.changelist_view	admin:church_members_user_changelist
+/admin/church_members/user/<id>/password/	django.contrib.auth.admin.user_change_password	admin:auth_user_password_change
+/admin/church_members/user/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/church_members/user/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:church_members_user_change
+/admin/church_members/user/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:church_members_user_delete
+/admin/church_members/user/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:church_members_user_history
+/admin/church_members/user/add/	django.contrib.auth.admin.add_view	admin:church_members_user_add
+/admin/committees/committee/	django.contrib.admin.options.changelist_view	admin:committees_committee_changelist
+/admin/committees/committee/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/committees/committee/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:committees_committee_change
+/admin/committees/committee/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:committees_committee_delete
+/admin/committees/committee/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:committees_committee_history
+/admin/committees/committee/add/	django.contrib.admin.options.add_view	admin:committees_committee_add
+/admin/committees/committeemembership/	django.contrib.admin.options.changelist_view	admin:committees_committeemembership_changelist
+/admin/committees/committeemembership/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/committees/committeemembership/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:committees_committeemembership_change
+/admin/committees/committeemembership/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:committees_committeemembership_delete
+/admin/committees/committeemembership/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:committees_committeemembership_history
+/admin/committees/committeemembership/add/	django.contrib.admin.options.add_view	admin:committees_committeemembership_add
+/admin/committees/committeeposition/	django.contrib.admin.options.changelist_view	admin:committees_committeeposition_changelist
+/admin/committees/committeeposition/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/committees/committeeposition/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:committees_committeeposition_change
+/admin/committees/committeeposition/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:committees_committeeposition_delete
+/admin/committees/committeeposition/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:committees_committeeposition_history
+/admin/committees/committeeposition/add/	django.contrib.admin.options.add_view	admin:committees_committeeposition_add
+/admin/documents/document/	django.contrib.admin.options.changelist_view	admin:documents_document_changelist
+/admin/documents/document/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/documents/document/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:documents_document_change
+/admin/documents/document/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:documents_document_delete
+/admin/documents/document/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:documents_document_history
+/admin/documents/document/add/	django.contrib.admin.options.add_view	admin:documents_document_add
+/admin/events/event/	django.contrib.admin.options.changelist_view	admin:events_event_changelist
+/admin/events/event/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/events/event/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:events_event_change
+/admin/events/event/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:events_event_delete
+/admin/events/event/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:events_event_history
+/admin/events/event/add/	django.contrib.admin.options.add_view	admin:events_event_add
+/admin/events/eventregistration/	django.contrib.admin.options.changelist_view	admin:events_eventregistration_changelist
+/admin/events/eventregistration/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/events/eventregistration/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:events_eventregistration_change
+/admin/events/eventregistration/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:events_eventregistration_delete
+/admin/events/eventregistration/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:events_eventregistration_history
+/admin/events/eventregistration/add/	django.contrib.admin.options.add_view	admin:events_eventregistration_add
+/admin/jsi18n/	django.contrib.admin.sites.i18n_javascript	admin:jsi18n
+/admin/login/	django.contrib.admin.sites.login	admin:login
+/admin/logout/	django.contrib.admin.sites.logout	admin:logout
+/admin/notifications/notification/	django.contrib.admin.options.changelist_view	admin:notifications_notification_changelist
+/admin/notifications/notification/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/notifications/notification/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:notifications_notification_change
+/admin/notifications/notification/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:notifications_notification_delete
+/admin/notifications/notification/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:notifications_notification_history
+/admin/notifications/notification/add/	django.contrib.admin.options.add_view	admin:notifications_notification_add
+/admin/password_change/	django.contrib.admin.sites.password_change	admin:password_change
+/admin/password_change/done/	django.contrib.admin.sites.password_change_done	admin:password_change_done
+/admin/r/<path:content_type_id>/<path:object_id>/	django.contrib.contenttypes.views.shortcut	admin:view_on_site
+/admin/social/comment/	django.contrib.admin.options.changelist_view	admin:social_comment_changelist
+/admin/social/comment/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/social/comment/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:social_comment_change
+/admin/social/comment/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:social_comment_delete
+/admin/social/comment/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:social_comment_history
+/admin/social/comment/add/	django.contrib.admin.options.add_view	admin:social_comment_add
+/admin/social/post/	django.contrib.admin.options.changelist_view	admin:social_post_changelist
+/admin/social/post/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/social/post/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:social_post_change
+/admin/social/post/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:social_post_delete
+/admin/social/post/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:social_post_history
+/admin/social/post/add/	django.contrib.admin.options.add_view	admin:social_post_add
+/admin/social/prayerrequest/	django.contrib.admin.options.changelist_view	admin:social_prayerrequest_changelist
+/admin/social/prayerrequest/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/social/prayerrequest/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:social_prayerrequest_change
+/admin/social/prayerrequest/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:social_prayerrequest_delete
+/admin/social/prayerrequest/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:social_prayerrequest_history
+/admin/social/prayerrequest/add/	django.contrib.admin.options.add_view	admin:social_prayerrequest_add
+/admin/social/testimony/	django.contrib.admin.options.changelist_view	admin:social_testimony_changelist
+/admin/social/testimony/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/social/testimony/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:social_testimony_change
+/admin/social/testimony/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:social_testimony_delete
+/admin/social/testimony/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:social_testimony_history
+/admin/social/testimony/add/	django.contrib.admin.options.add_view	admin:social_testimony_add
+/admin/token_blacklist/blacklistedtoken/	django.contrib.admin.options.changelist_view	admin:token_blacklist_blacklistedtoken_changelist
+/admin/token_blacklist/blacklistedtoken/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/token_blacklist/blacklistedtoken/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:token_blacklist_blacklistedtoken_change
+/admin/token_blacklist/blacklistedtoken/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:token_blacklist_blacklistedtoken_delete
+/admin/token_blacklist/blacklistedtoken/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:token_blacklist_blacklistedtoken_history
+/admin/token_blacklist/blacklistedtoken/add/	django.contrib.admin.options.add_view	admin:token_blacklist_blacklistedtoken_add
+/admin/token_blacklist/outstandingtoken/	django.contrib.admin.options.changelist_view	admin:token_blacklist_outstandingtoken_changelist
+/admin/token_blacklist/outstandingtoken/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/token_blacklist/outstandingtoken/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:token_blacklist_outstandingtoken_change
+/admin/token_blacklist/outstandingtoken/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:token_blacklist_outstandingtoken_delete
+/admin/token_blacklist/outstandingtoken/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:token_blacklist_outstandingtoken_history
+/admin/token_blacklist/outstandingtoken/add/	django.contrib.admin.options.add_view	admin:token_blacklist_outstandingtoken_add
+/admin/visitors/visitor/	django.contrib.admin.options.changelist_view	admin:visitors_visitor_changelist
+/admin/visitors/visitor/<path:object_id>/	django.views.generic.base.RedirectView
+/admin/visitors/visitor/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:visitors_visitor_change
+/admin/visitors/visitor/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:visitors_visitor_delete
+/admin/visitors/visitor/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:visitors_visitor_history
+/admin/visitors/visitor/add/	django.contrib.admin.options.add_view	admin:visitors_visitor_add
+/api/announcements/	announcements.views.AnnouncementViewSet	announcements-list
+/api/announcements/	rest_framework.routers.APIRootView	api-root
+/api/announcements/<drf_format_suffix:format>	rest_framework.routers.APIRootView	api-root
+/api/announcements/<pk>/	announcements.views.AnnouncementViewSet	announcements-detail
+/api/announcements/<pk>/deactivate/	announcements.views.AnnouncementViewSet	announcements-deactivate
+/api/announcements/<pk>/deactivate\.<format>/	announcements.views.AnnouncementViewSet	announcements-deactivate
+/api/announcements/<pk>\.<format>/	announcements.views.AnnouncementViewSet	announcements-detail
+/api/announcements/\.<format>/	announcements.views.AnnouncementViewSet	announcements-list
+/api/announcements/latest/	announcements.views.AnnouncementViewSet	announcements-latest
+/api/announcements/latest\.<format>/	announcements.views.AnnouncementViewSet	announcements-latest
+/api/announcements/statistics/	announcements.views.AnnouncementViewSet	announcements-statistics
+/api/announcements/statistics\.<format>/	announcements.views.AnnouncementViewSet	announcements-statistics
+/api/attendance/	rest_framework.routers.APIRootView	api-root
+/api/attendance/<drf_format_suffix:format>	rest_framework.routers.APIRootView	api-root
+/api/attendance/records/	attendance.views.AttendanceRecordViewSet	attendancerecord-list
+/api/attendance/records/<pk>/	attendance.views.AttendanceRecordViewSet	attendancerecord-detail
+/api/attendance/records/<pk>\.<format>/	attendance.views.AttendanceRecordViewSet	attendancerecord-detail
+/api/attendance/records/my_attendance/	attendance.views.AttendanceRecordViewSet	attendancerecord-my-attendance
+/api/attendance/records/my_attendance\.<format>/	attendance.views.AttendanceRecordViewSet	attendancerecord-my-attendance
+/api/attendance/records/my_statistics/	attendance.views.AttendanceRecordViewSet	attendancerecord-my-statistics
+/api/attendance/records/my_statistics\.<format>/	attendance.views.AttendanceRecordViewSet	attendancerecord-my-statistics
+/api/attendance/records\.<format>/	attendance.views.AttendanceRecordViewSet	attendancerecord-list
+/api/attendance/sessions/	attendance.views.AttendanceSessionViewSet	attendancesession-list
+/api/attendance/sessions/<pk>/	attendance.views.AttendanceSessionViewSet	attendancesession-detail
+/api/attendance/sessions/<pk>/check_in/	attendance.views.AttendanceSessionViewSet	attendancesession-check-in
+/api/attendance/sessions/<pk>/check_in\.<format>/	attendance.views.AttendanceSessionViewSet	attendancesession-check-in
+/api/attendance/sessions/<pk>/statistics/	attendance.views.AttendanceSessionViewSet	attendancesession-statistics
+/api/attendance/sessions/<pk>/statistics\.<format>/	attendance.views.AttendanceSessionViewSet	attendancesession-statistics
+/api/attendance/sessions/<pk>\.<format>/	attendance.views.AttendanceSessionViewSet	attendancesession-detail
+/api/attendance/sessions/leaderboard/	attendance.views.AttendanceSessionViewSet	attendancesession-leaderboard
+/api/attendance/sessions/leaderboard\.<format>/	attendance.views.AttendanceSessionViewSet	attendancesession-leaderboard
+/api/attendance/sessions\.<format>/	attendance.views.AttendanceSessionViewSet	attendancesession-list
+/api/audit/	audit.views.AuditLogViewSet	audit-list
+/api/audit/	rest_framework.routers.APIRootView	api-root
+/api/audit/<drf_format_suffix:format>	rest_framework.routers.APIRootView	api-root
+/api/audit/<pk>/	audit.views.AuditLogViewSet	audit-detail
+/api/audit/<pk>\.<format>/	audit.views.AuditLogViewSet	audit-detail
+/api/audit/\.<format>/	audit.views.AuditLogViewSet	audit-list
+/api/auth/dashboard/	authentication.views.DashboardView
+/api/auth/login/	rest_framework_simplejwt.views.TokenObtainPairView
+/api/auth/logout/	authentication.views.LogoutView
+/api/auth/password-reset-confirm/<uidb64>/<token>/	authentication.views.PasswordResetConfirmView
+/api/auth/password-reset/	authentication.views.PasswordResetRequestView
+/api/auth/profile/	authentication.views.ProfileView
+/api/auth/register/	authentication.views.RegisterView
+/api/auth/search-users/	authentication.views.SearchUsersView
+/api/auth/token/refresh/	rest_framework_simplejwt.views.TokenRefreshView
+/api/committees/	committees.views.CommitteeViewSet	committees-list
+/api/committees/	rest_framework.routers.APIRootView	api-root
+/api/committees/<drf_format_suffix:format>	rest_framework.routers.APIRootView	api-root
+/api/committees/<pk>/	committees.views.CommitteeViewSet	committees-detail
+/api/committees/<pk>/join/	committees.views.CommitteeViewSet	committees-join
+/api/committees/<pk>/join\.<format>/	committees.views.CommitteeViewSet	committees-join
+/api/committees/<pk>/leadership/	committees.views.CommitteeViewSet	committees-leadership
+/api/committees/<pk>/leadership\.<format>/	committees.views.CommitteeViewSet	committees-leadership
+/api/committees/<pk>/leave/	committees.views.CommitteeViewSet	committees-leave
+/api/committees/<pk>/leave\.<format>/	committees.views.CommitteeViewSet	committees-leave
+/api/committees/<pk>/members/	committees.views.CommitteeViewSet	committees-members
+/api/committees/<pk>/members\.<format>/	committees.views.CommitteeViewSet	committees-members
+/api/committees/<pk>\.<format>/	committees.views.CommitteeViewSet	committees-detail
+/api/committees/\.<format>/	committees.views.CommitteeViewSet	committees-list
+/api/committees/analytics/	committees.views.CommitteeViewSet	committees-analytics
+/api/committees/analytics\.<format>/	committees.views.CommitteeViewSet	committees-analytics
+/api/committees/memberships/	committees.views.CommitteeMembershipViewSet	committeemembership-list
+/api/committees/memberships/<pk>/	committees.views.CommitteeMembershipViewSet	committeemembership-detail
+/api/committees/memberships/<pk>/activate/	committees.views.CommitteeMembershipViewSet	committeemembership-activate
+/api/committees/memberships/<pk>/activate\.<format>/	committees.views.CommitteeMembershipViewSet	committeemembership-activate
+/api/committees/memberships/<pk>/deactivate/	committees.views.CommitteeMembershipViewSet	committeemembership-deactivate
+/api/committees/memberships/<pk>/deactivate\.<format>/	committees.views.CommitteeMembershipViewSet	committeemembership-deactivate
+/api/committees/memberships/<pk>\.<format>/	committees.views.CommitteeMembershipViewSet	committeemembership-detail
+/api/committees/memberships\.<format>/	committees.views.CommitteeMembershipViewSet	committeemembership-list
+/api/committees/positions/	committees.views.CommitteePositionViewSet	committeeposition-list
+/api/committees/positions/<pk>/	committees.views.CommitteePositionViewSet	committeeposition-detail
+/api/committees/positions/<pk>\.<format>/	committees.views.CommitteePositionViewSet	committeeposition-detail
+/api/committees/positions\.<format>/	committees.views.CommitteePositionViewSet	committeeposition-list
+/api/dashboard/	dashboard.views.DashboardView	dashboard
+/api/dashboard/analytics/	dashboard.views.DashboardAnalyticsView	dashboard-analytics
+/api/documents/	documents.views.DocumentViewSet	documents-list
+/api/documents/	rest_framework.routers.APIRootView	api-root
+/api/documents/<drf_format_suffix:format>	rest_framework.routers.APIRootView	api-root
+/api/documents/<pk>/	documents.views.DocumentViewSet	documents-detail
+/api/documents/<pk>/download/	documents.views.DocumentViewSet	documents-download
+/api/documents/<pk>/download\.<format>/	documents.views.DocumentViewSet	documents-download
+/api/documents/<pk>\.<format>/	documents.views.DocumentViewSet	documents-detail
+/api/documents/\.<format>/	documents.views.DocumentViewSet	documents-list
+/api/documents/by_type/	documents.views.DocumentViewSet	documents-by-type
+/api/documents/by_type\.<format>/	documents.views.DocumentViewSet	documents-by-type
+/api/documents/public/	documents.views.DocumentViewSet	documents-public
+/api/documents/public\.<format>/	documents.views.DocumentViewSet	documents-public
+/api/documents/recent/	documents.views.DocumentViewSet	documents-recent
+/api/documents/recent\.<format>/	documents.views.DocumentViewSet	documents-recent
+/api/documents/search/	documents.views.DocumentViewSet	documents-search
+/api/documents/search\.<format>/	documents.views.DocumentViewSet	documents-search
+/api/documents/statistics/	documents.views.DocumentViewSet	documents-statistics
+/api/documents/statistics\.<format>/	documents.views.DocumentViewSet	documents-statistics
+/api/events/	events.views.EventViewSet	events-list
+/api/events/	rest_framework.routers.APIRootView	api-root
+/api/events/<drf_format_suffix:format>	rest_framework.routers.APIRootView	api-root
+/api/events/<pk>/	events.views.EventViewSet	events-detail
+/api/events/<pk>/attendees/	events.views.EventViewSet	events-attendees
+/api/events/<pk>/attendees\.<format>/	events.views.EventViewSet	events-attendees
+/api/events/<pk>/cancel_registration/	events.views.EventViewSet	events-cancel-registration
+/api/events/<pk>/cancel_registration\.<format>/	events.views.EventViewSet	events-cancel-registration
+/api/events/<pk>/register/	events.views.EventViewSet	events-register
+/api/events/<pk>/register\.<format>/	events.views.EventViewSet	events-register
+/api/events/<pk>\.<format>/	events.views.EventViewSet	events-detail
+/api/events/\.<format>/	events.views.EventViewSet	events-list
+/api/events/calendar/	events.views.EventViewSet	events-calendar
+/api/events/calendar\.<format>/	events.views.EventViewSet	events-calendar
+/api/events/my_registrations/	events.views.EventViewSet	events-my-registrations
+/api/events/my_registrations\.<format>/	events.views.EventViewSet	events-my-registrations
+/api/events/registrations/	events.views.EventRegistrationViewSet	eventregistration-list
+/api/events/registrations/<pk>/	events.views.EventRegistrationViewSet	eventregistration-detail
+/api/events/registrations/<pk>\.<format>/	events.views.EventRegistrationViewSet	eventregistration-detail
+/api/events/registrations\.<format>/	events.views.EventRegistrationViewSet	eventregistration-list
+/api/events/statistics/	events.views.EventViewSet	events-statistics
+/api/events/statistics\.<format>/	events.views.EventViewSet	events-statistics
+/api/events/this_week/	events.views.EventViewSet	events-this-week
+/api/events/this_week\.<format>/	events.views.EventViewSet	events-this-week
+/api/events/today/	events.views.EventViewSet	events-today
+/api/events/today\.<format>/	events.views.EventViewSet	events-today
+/api/events/upcoming/	events.views.EventViewSet	events-upcoming
+/api/events/upcoming\.<format>/	events.views.EventViewSet	events-upcoming
+/api/finances/	rest_framework.routers.APIRootView	api-root
+/api/finances/<drf_format_suffix:format>	rest_framework.routers.APIRootView	api-root
+/api/finances/categories/	finances.views.FinancialCategoryViewSet	financialcategory-list
+/api/finances/categories/<pk>/	finances.views.FinancialCategoryViewSet	financialcategory-detail
+/api/finances/categories/<pk>\.<format>/	finances.views.FinancialCategoryViewSet	financialcategory-detail
+/api/finances/categories\.<format>/	finances.views.FinancialCategoryViewSet	financialcategory-list
+/api/finances/expenses/	finances.views.ExpenseViewSet	expense-list
+/api/finances/expenses/<pk>/	finances.views.ExpenseViewSet	expense-detail
+/api/finances/expenses/<pk>/approve/	finances.views.ExpenseViewSet	expense-approve
+/api/finances/expenses/<pk>/approve\.<format>/	finances.views.ExpenseViewSet	expense-approve
+/api/finances/expenses/<pk>\.<format>/	finances.views.ExpenseViewSet	expense-detail
+/api/finances/expenses/summary/	finances.views.ExpenseViewSet	expense-summary
+/api/finances/expenses/summary\.<format>/	finances.views.ExpenseViewSet	expense-summary
+/api/finances/expenses\.<format>/	finances.views.ExpenseViewSet	expense-list
+/api/finances/income/	finances.views.IncomeViewSet	income-list
+/api/finances/income/<pk>/	finances.views.IncomeViewSet	income-detail
+/api/finances/income/<pk>\.<format>/	finances.views.IncomeViewSet	income-detail
+/api/finances/income/summary/	finances.views.IncomeViewSet	income-summary
+/api/finances/income/summary\.<format>/	finances.views.IncomeViewSet	income-summary
+/api/finances/income\.<format>/	finances.views.IncomeViewSet	income-list
+/api/notifications/	notifications.views.NotificationViewSet	notifications-list
+/api/notifications/	rest_framework.routers.APIRootView	api-root
+/api/notifications/<drf_format_suffix:format>	rest_framework.routers.APIRootView	api-root
+/api/notifications/<pk>/	notifications.views.NotificationViewSet	notifications-detail
+/api/notifications/<pk>/mark_read/	notifications.views.NotificationViewSet	notifications-mark-read
+/api/notifications/<pk>/mark_read\.<format>/	notifications.views.NotificationViewSet	notifications-mark-read
+/api/notifications/<pk>\.<format>/	notifications.views.NotificationViewSet	notifications-detail
+/api/notifications/\.<format>/	notifications.views.NotificationViewSet	notifications-list
+/api/notifications/mark_all_read/	notifications.views.NotificationViewSet	notifications-mark-all-read
+/api/notifications/mark_all_read\.<format>/	notifications.views.NotificationViewSet	notifications-mark-all-read
+/api/notifications/statistics/	notifications.views.NotificationViewSet	notifications-statistics
+/api/notifications/statistics\.<format>/	notifications.views.NotificationViewSet	notifications-statistics
+/api/notifications/unread/	notifications.views.NotificationViewSet	notifications-unread
+/api/notifications/unread\.<format>/	notifications.views.NotificationViewSet	notifications-unread
+/api/reports/	reports.views.ReportsView
+/api/reports/attendance/	reports.views.AttendanceReportView
+/api/reports/committees/	reports.views.CommitteeReportView
+/api/reports/events/	reports.views.EventReportView
+/api/reports/finances/	reports.views.FinanceReportView
+/api/reports/members/	reports.views.MemberReportView
+/api/social/	rest_framework.routers.APIRootView	api-root
+/api/social/<drf_format_suffix:format>	rest_framework.routers.APIRootView	api-root
+/api/social/comments/	social.views.CommentViewSet	comment-list
+/api/social/comments/<pk>/	social.views.CommentViewSet	comment-detail
+/api/social/comments/<pk>\.<format>/	social.views.CommentViewSet	comment-detail
+/api/social/comments\.<format>/	social.views.CommentViewSet	comment-list
+/api/social/gallery/	social.views.MediaGalleryViewSet	mediagallery-list
+/api/social/gallery/<pk>/	social.views.MediaGalleryViewSet	mediagallery-detail
+/api/social/gallery/<pk>\.<format>/	social.views.MediaGalleryViewSet	mediagallery-detail
+/api/social/gallery\.<format>/	social.views.MediaGalleryViewSet	mediagallery-list
+/api/social/posts/	social.views.PostViewSet	post-list
+/api/social/posts/<pk>/	social.views.PostViewSet	post-detail
+/api/social/posts/<pk>/deactivate/	social.views.PostViewSet	post-deactivate
+/api/social/posts/<pk>/deactivate\.<format>/	social.views.PostViewSet	post-deactivate
+/api/social/posts/<pk>\.<format>/	social.views.PostViewSet	post-detail
+/api/social/posts/statistics/	social.views.PostViewSet	post-statistics
+/api/social/posts/statistics\.<format>/	social.views.PostViewSet	post-statistics
+/api/social/posts\.<format>/	social.views.PostViewSet	post-list
+/api/social/prayer-requests/	social.views.PrayerRequestViewSet	prayerrequest-list
+/api/social/prayer-requests/<pk>/	social.views.PrayerRequestViewSet	prayerrequest-detail
+/api/social/prayer-requests/<pk>/answered/	social.views.PrayerRequestViewSet	prayerrequest-answered
+/api/social/prayer-requests/<pk>/answered\.<format>/	social.views.PrayerRequestViewSet	prayerrequest-answered
+/api/social/prayer-requests/<pk>\.<format>/	social.views.PrayerRequestViewSet	prayerrequest-detail
+/api/social/prayer-requests\.<format>/	social.views.PrayerRequestViewSet	prayerrequest-list
+/api/social/reactions/	social.views.PostReactionViewSet	postreaction-list
+/api/social/reactions/<pk>/	social.views.PostReactionViewSet	postreaction-detail
+/api/social/reactions/<pk>\.<format>/	social.views.PostReactionViewSet	postreaction-detail
+/api/social/reactions\.<format>/	social.views.PostReactionViewSet	postreaction-list
+/api/social/replies/	social.views.CommentReplyViewSet	commentreply-list
+/api/social/replies/<pk>/	social.views.CommentReplyViewSet	commentreply-detail
+/api/social/replies/<pk>\.<format>/	social.views.CommentReplyViewSet	commentreply-detail
+/api/social/replies\.<format>/	social.views.CommentReplyViewSet	commentreply-list
+/api/social/testimonies/	social.views.TestimonyViewSet	testimony-list
+/api/social/testimonies/<pk>/	social.views.TestimonyViewSet	testimony-detail
+/api/social/testimonies/<pk>/approve/	social.views.TestimonyViewSet	testimony-approve
+/api/social/testimonies/<pk>/approve\.<format>/	social.views.TestimonyViewSet	testimony-approve
+/api/social/testimonies/<pk>\.<format>/	social.views.TestimonyViewSet	testimony-detail
+/api/social/testimonies/approved/	social.views.TestimonyViewSet	testimony-approved
+/api/social/testimonies/approved\.<format>/	social.views.TestimonyViewSet	testimony-approved
+/api/social/testimonies\.<format>/	social.views.TestimonyViewSet	testimony-list
+/api/users/	church_members.views.UserViewSet	user-list
+/api/users/	rest_framework.routers.APIRootView	api-root
+/api/users/<drf_format_suffix:format>	rest_framework.routers.APIRootView	api-root
+/api/users/<pk>/	church_members.views.UserViewSet	user-detail
+/api/users/<pk>\.<format>/	church_members.views.UserViewSet	user-detail
+/api/users/\.<format>/	church_members.views.UserViewSet	user-list
+/api/users/baptized/	church_members.views.UserViewSet	user-baptized
+/api/users/baptized\.<format>/	church_members.views.UserViewSet	user-baptized
+/api/users/birthdays/	church_members.views.UserViewSet	user-birthdays
+/api/users/birthdays\.<format>/	church_members.views.UserViewSet	user-birthdays
+/api/users/committee_breakdown/	church_members.views.UserViewSet	user-committee-breakdown
+/api/users/committee_breakdown\.<format>/	church_members.views.UserViewSet	user-committee-breakdown
+/api/users/committee_summary/	church_members.views.UserViewSet	user-committee-summary
+/api/users/committee_summary\.<format>/	church_members.views.UserViewSet	user-committee-summary
+/api/users/leaders/	church_members.views.UserViewSet	user-leaders
+/api/users/leaders\.<format>/	church_members.views.UserViewSet	user-leaders
+/api/users/member_directory/	church_members.views.UserViewSet	user-member-directory
+/api/users/member_directory\.<format>/	church_members.views.UserViewSet	user-member-directory
+/api/users/recent_members/	church_members.views.UserViewSet	user-recent-members
+/api/users/recent_members\.<format>/	church_members.views.UserViewSet	user-recent-members
+/api/users/role_breakdown/	church_members.views.UserViewSet	user-role-breakdown
+/api/users/role_breakdown\.<format>/	church_members.views.UserViewSet	user-role-breakdown
+/api/users/sealed/	church_members.views.UserViewSet	user-sealed
+/api/users/sealed\.<format>/	church_members.views.UserViewSet	user-sealed
+/api/users/search/	church_members.views.UserViewSet	user-search
+/api/users/search\.<format>/	church_members.views.UserViewSet	user-search
+/api/users/statistics/	church_members.views.UserViewSet	user-statistics
+/api/users/statistics\.<format>/	church_members.views.UserViewSet	user-statistics
+/api/users/students/	church_members.views.UserViewSet	user-students
+/api/users/students\.<format>/	church_members.views.UserViewSet	user-students
+/api/visitors/	rest_framework.routers.APIRootView	api-root
+/api/visitors/	visitors.views.VisitorViewSet	visitors-list
+/api/visitors/<drf_format_suffix:format>	rest_framework.routers.APIRootView	api-root
+/api/visitors/<pk>/	visitors.views.VisitorViewSet	visitors-detail
+/api/visitors/<pk>\.<format>/	visitors.views.VisitorViewSet	visitors-detail
+/api/visitors/\.<format>/	visitors.views.VisitorViewSet	visitors-list
+/api/visitors/statistics/	visitors.views.VisitorViewSet	visitors-statistics
+/api/visitors/statistics\.<format>/	visitors.views.VisitorViewSet	visitors-statistics
+/api/visitors/status_breakdown/	visitors.views.VisitorViewSet	visitors-status-breakdown
+/api/visitors/status_breakdown\.<format>/	visitors.views.VisitorViewSet	visitors-status-breakdown
+/media/<path>	django.views.static.serve

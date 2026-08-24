@@ -12,7 +12,11 @@ SECRET_KEY = 'django-insecure-acxa27u8n(7*xb4ujqmen8%2+i91j@=0ip5qi-p0$tv^rmp%cn
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'testserver',
+]
 
 
 # ==================================================
@@ -176,3 +180,11 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
+
+
+# ==================================================
+# MEDIA FILES
+# ==================================================
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

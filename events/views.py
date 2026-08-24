@@ -23,7 +23,7 @@ class EventViewSet(
 ):
 
     queryset = Event.objects.all().order_by(
-        'start_date'
+        'event_date'
     )
 
     serializer_class = EventSerializer
@@ -178,7 +178,7 @@ class EventViewSet(
 
         upcoming_events = (
             Event.objects.filter(
-                start_date__gte=timezone.now()
+                event_date__gte=timezone.now()
             ).count()
         )
 
@@ -209,7 +209,7 @@ class EventViewSet(
     ):
 
         events = Event.objects.all().order_by(
-            'start_date'
+            'event_date'
         )
 
         serializer = EventSerializer(
@@ -231,9 +231,9 @@ class EventViewSet(
     ):
 
         events = Event.objects.filter(
-            start_date__gte=timezone.now()
+            event_date__gte=timezone.now()
         ).order_by(
-            'start_date'
+            'event_date'
         )
 
         serializer = EventSerializer(
@@ -257,9 +257,9 @@ class EventViewSet(
         today = timezone.now().date()
 
         events = Event.objects.filter(
-            start_date__date=today
+            event_date__date=today
         ).order_by(
-            'start_date'
+            'event_date'
         )
 
         serializer = EventSerializer(
@@ -288,12 +288,12 @@ class EventViewSet(
         )
 
         events = Event.objects.filter(
-            start_date__range=(
+            event_date__range=(
                 today,
                 end_of_week
             )
         ).order_by(
-            'start_date'
+            'event_date'
         )
 
         serializer = EventSerializer(
@@ -303,6 +303,26 @@ class EventViewSet(
 
         return Response(
             serializer.data
+        )
+
+    def perform_create(
+        self,
+        serializer
+    ):
+        serializer.save(
+            created_by=self.request.user
+        )
+
+    def perform_update(
+        self,
+        serializer
+    ):
+        serializer.save(
+            created_by=(
+                serializer.instance.created_by
+                if serializer.instance
+                else self.request.user
+            )
         )
 
 

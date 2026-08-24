@@ -1,300 +1,259 @@
 # UNZA Congregation Management System
 
-A comprehensive management system for the New Apostolic Church UNZA Congregation, built with Django REST Framework and modern web technologies.
+A Django REST API project for managing members, committees, events, attendance, announcements, notifications, documents, visitors, and reports for the New Apostolic Church UNZA Congregation.
 
-## Features
+## Backend State
 
-### 🔐 Authentication & User Management
-- **Custom User Model** with comprehensive member information
-- **JWT Authentication** for secure API access
-- **Role-based Access Control** (Super Users, Admin Users, High Privilege Users, Members)
-- **Password Reset** functionality via email
-- **Profile Picture Upload** with automatic resizing
+The backend is complete for the current project scope and has been validated with the Django test suite.
 
-### 👥 User Hierarchy
-- **Super Users (Developers)**: Full system access
-- **Admin Users (Ministers/Youth Leaders)**: Can assign functionality to subordinates
-- **High Privilege Users (Committee/Section Leaders)**: Can assign functionality to subordinates
-- **Members**: Basic user access
+- All README main API prefixes are implemented.
+- Event support uses a single `event_date` timestamp plus recurrence fields.
+- The legacy `start_date` / `end_date` fields have been removed.
+- The full backend test suite passes with `python manage.py test`.
 
-### 🏛️ Committee Management
-Nine specialized committees:
-1. **Catering Committee** - Food and catering services organization
-2. **Music Committee** - Musical services and orchestra
-3. **Organizing Committee** - Event planning and transportation
-4. **Finance Committee** - Budget management and fund collection
-5. **DRAPO Committee** - Drama and poetry entertainment
-6. **Communication Committee** - Sound systems and audio management
-7. **Testify Committee** - Doctrinal issues and faith preparation
-8. **Flowering Committee** - Church beautification
-9. **Secretarial Committee** - Records and documentation management
+### Backend Validation Commands
 
-### 📅 Calendar & Events
-- **Event Calendar** for congregational activities
-- **Birthday Calendar** for all members
-- **Event Registration** and attendance tracking
-- **Automatic Reminders** for upcoming events
-- **Event Categories** and filtering
+Run the backend validation commands from the project root:
 
-### 🔔 Notification System
-- **Real-time Notifications** for events, birthdays, and announcements
-- **Multiple Delivery Methods** (Email, SMS, Push, In-App)
-- **Bulk Notifications** for mass communication
-- **Notification Preferences** per user
-- **Announcement Board** for congregation-wide messages
+```bash
+venv\Scripts\activate
+python manage.py test
+python manage.py show_urls
+```
 
-### 💬 Social Media Features
-- **Member Posts** with privacy controls
-- **Comments and Replies** system
-- **Like/React** functionality
-- **Prayer Requests** with support system
-- **Testimonies** with approval workflow
-- **Media Gallery** for photos and documents
+## Overview
 
-### 📊 Profile Management
-- **Comprehensive User Profiles** with all required fields
-- **Privacy Settings** for personal information
-- **Committee Memberships** and preferences
-- **Academic Information** tracking
-- **Spiritual Milestones** (Baptism, Sealing dates)
+This repository contains the backend for a church management system built with Django and Django REST Framework. It supports user authentication, role-based access, committee management, event tracking, attendance, communications, and reporting workflows.
+
+## Key Features
+
+- Custom user model for church members and staff
+- JWT-based authentication and refresh tokens
+- Role-aware access for administrators, leaders, and members
+- Committee membership and management
+- Event and attendance tracking
+- Announcements and notifications
+- Social and community features for posts, testimonies, and prayer requests
+- Reports, finances, documents, and visitor management
+
+## Project Modules
+
+The backend is organized into the following apps:
+
+- accounts
+- announcements
+- attendance
+- audit
+- authentication
+- church_members
+- committees
+- dashboard
+- documents
+- events
+- finances
+- notifications
+- reports
+- social
+- visitors
 
 ## Technology Stack
 
-- **Backend**: Django 4.2+ with Django REST Framework
-- **Authentication**: JWT with Simple JWT
-- **Database**: PostgreSQL (configurable)
-- **Media Handling**: Pillow for image processing
-- **Task Queue**: Celery with Redis
-- **Notifications**: django-notifications-hq
-- **Social Features**: django-taggit, django-activity-stream
+- Backend: Django 5.2+
+- API: Django REST Framework
+- Authentication: Simple JWT
+- Database: SQLite by default (easy local development)
+- Media handling: Django file storage
+- CORS support: django-cors-headers
 
-## Installation & Setup
+## Prerequisites
 
-### Prerequisites
-- Python 3.8+
-- PostgreSQL
-- Redis (for Celery tasks)
-- Node.js (for frontend, if applicable)
+- Python 3.10+
+- pip
+- Virtual environment tool (optional but recommended)
 
-### 1. Clone the Repository
+## Installation
+
+1. Clone the repository
 ```bash
-https://github.com/muchingarobert-prog/Final-Year-CIMS-Project.git
+git clone https://github.com/muchingarobert-prog/Final-Year-CIMS-Project.git
+cd Final-Year-CIMS-Project
 ```
 
-### 2. Create Virtual Environment
+2. Create and activate a virtual environment
 ```bash
 python -m venv venv
 # Windows
 venv\Scripts\activate
-# Linux/Mac
+# Linux/macOS
 source venv/bin/activate
 ```
 
-### 3. Install Dependencies
+3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Environment Configuration
-Create a `.env` file in the backend directory:
-```env
-SECRET_KEY=your-secret-key-here
-DEBUG=True
-POSTGRES_DB=unza_congregation
-POSTGRES_USER=your-db-user
-POSTGRES_PASSWORD=your-db-password
-```
-
-### 5. Database Setup
+4. Apply database migrations
 ```bash
-cd backend
-python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 6. Create Superuser
+5. Create a superuser
 ```bash
 python manage.py createsuperuser
 ```
 
-### 7. Populate Initial Data
-```bash
-python manage.py populate_initial_data
-```
-
-### 8. Run Development Server
+6. Run the development server
 ```bash
 python manage.py runserver
 ```
 
-The API will be available at `http://localhost:8000/api/`
+The API will be available at:
+```text
+http://127.0.0.1:8000/
+```
 
-## API Endpoints
+## React Frontend Demo
 
-### Authentication
-- `POST /api/auth/register/` - User registration
-- `POST /api/auth/login/` - User login
-- `POST /api/auth/logout/` - User logout
-- `POST /api/auth/token/refresh/` - Refresh JWT token
-- `POST /api/auth/password-reset/` - Request password reset
-- `POST /api/auth/password-reset-confirm/<uidb64>/<token>/` - Confirm password reset
+A minimal React demo is available under `frontend/`.
 
-### User Management
-- `GET /api/auth/profile/` - Get current user profile
-- `PUT /api/auth/profile/` - Update user profile
-- `GET /api/auth/dashboard/` - User dashboard data
-- `GET /api/auth/search-users/` - Search users
+The demo uses Vite and React Router to expose several pages:
 
-### Committees
-- `GET /api/committees/` - List all committees
-- `GET /api/committees/<id>/` - Get committee details
-- `POST /api/committees/<id>/join/` - Join a committee
-- `DELETE /api/committees/<id>/leave/` - Leave a committee
+- `/` - overview
+- `/login` - login form
+- `/register` - registration form
+- `/dashboard` - authenticated dashboard view
+- `/committees` - committee list
+- `/events` - event list
 
-### Events
-- `GET /api/events/` - List all events
-- `POST /api/events/` - Create new event (admin/high privilege)
-- `GET /api/events/<id>/` - Get event details
-- `POST /api/events/<id>/register/` - Register for event
-- `GET /api/events/calendar/` - Calendar view of events
+To run it locally:
 
-### Notifications
-- `GET /api/notifications/` - Get user notifications
-- `POST /api/notifications/<id>/mark-read/` - Mark notification as read
-- `GET /api/notifications/announcements/` - Get announcements
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## User Data Fields
+Then open:
 
-### Required Registration Fields
-- **Basic Info**: First Name, Last Name, Username, Email, Password
-- **Personal**: Gender, Date of Birth
-- **Contact**: Phone Number (optional)
-- **Addresses**: 
-  - Residential Address
-  - Residential Apostle Area
-  - School Residential Address (on/off campus)
-- **Spiritual**: Date of Baptism, Date of Sealing
-- **Academic**: Programme of Study, Year of Study
-- **Church**: Roles in Church, Committee Preferences
+```text
+http://127.0.0.1:5173/
+```
 
-### Optional Profile Fields
-- Profile Picture
-- Bio/About Me
-- Interests and Skills
-- Privacy Preferences
-- Notification Settings
+To build the frontend for production:
 
-## Committee Descriptions
+```bash
+npm run build
+```
 
-### 1. Catering Committee
-Handles all food-related organization with Elite as the main concern. Responsible for planning and organizing catering services during special programs.
+## Main API Routes
 
-### 2. Music Committee
-Makes every service beautiful through music. The UNZA congregation is renowned for their singing, with orchestra adding heavenly glory to every musical aspect.
+The project exposes these main API prefixes:
 
-### 3. Organizing Committee
-The most organized committee that structures all programs properly. Responsible for planning, supporting, and organizing congregational youth activities and transport arrangements.
-
-### 4. Finance Committee
-Creates congregational budgets and ensures proper fund collection flow and management.
-
-### 5. DRAPO Committee
-Composed of talented members who reach hearts through entertainment and teaching. DRAPO combines drama and poetry to unleash talent at the right time and place.
-
-### 6. Communication Committee
-Handles sound dissemination from conveyance to reception points, making every church activity come alive through proper audio management.
-
-### 7. Testify Committee
-Helps members understand their faith stance while preparing for Christ's return. Also handles all doctrinal issues in the congregation.
-
-### 8. Flowering Committee
-Responsible for beautifying the house of God during all church activities.
-
-### 9. Secretarial Committee
-Maintains all church records and documentation, managing data records for both membership and the church at large.
+- /api/auth/ - authentication and token management
+- /api/users/ - user and member management
+- /api/committees/ - committee operations
+- /api/events/ - event and registration endpoints
+- /api/attendance/ - attendance tracking
+- /api/announcements/ - announcements
+- /api/notifications/ - notifications
+- /api/social/ - social/community features
+- /api/dashboard/ - dashboard data
+- /api/reports/ - reports
+- /api/finances/ - finance data
+- /api/audit/ - audit trails
+- /api/documents/ - document management
+- /api/visitors/ - visitor management
 
 ## Development
 
-### Running Tests
+Run the backend server:
+```bash
+python manage.py runserver
+```
+
+Run the backend test suite:
 ```bash
 python manage.py test
 ```
 
-### Code Style
-The project follows PEP 8 guidelines. Use black for formatting:
+To run just the core API tests added for authentication, committees, events, and dashboard:
 ```bash
-pip install black
-black .
+python manage.py test authentication
 ```
 
-### Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+For formatting and linting style, keep the code aligned with the existing Django project conventions and use consistent, readable Python structure.
 
-## Security Features
+## Backend API Examples
 
-- JWT token-based authentication
-- Role-based permissions
-- Input validation and sanitization
-- CSRF protection
-- Password strength validation
-- Secure file upload handling
-- Privacy controls for user data
+Register a new user:
+```bash
+curl -X POST http://127.0.0.1:8000/api/auth/register/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"newuser","email":"newuser@example.com","password":"Str0ngP@ssw0rd!"}'
+```
+
+Log in and retrieve JWT tokens:
+```bash
+curl -X POST http://127.0.0.1:8000/api/auth/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"newuser","password":"Str0ngP@ssw0rd!"}'
+```
+
+Get dashboard data (replace TOKEN below):
+```bash
+curl -H "Authorization: Bearer TOKEN" http://127.0.0.1:8000/api/auth/dashboard/
+```
+
+List committees:
+```bash
+curl -H "Authorization: Bearer TOKEN" http://127.0.0.1:8000/api/committees/
+```
+
+List events:
+```bash
+curl -H "Authorization: Bearer TOKEN" http://127.0.0.1:8000/api/events/
+```
+
+## Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Add or update tests where appropriate
+4. Submit a pull request with a clear summary
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is intended for internal church administration use. Please confirm licensing terms with the repository owner before redistribution.
 
-## Support
+## Local Development with Docker
 
-For support and questions, please contact the development team or create an issue in the repository.
+Run the backend quickly with Docker Compose (uses SQLite for local development and an optional Redis service for background tasks):
 
-## Acknowledgments
+```bash
+docker-compose build
+docker-compose up
+```
 
-- New Apostolic Church UNZA Congregation
-- Django REST Framework community
-- All contributors and committee members
-A collaborative project building a church management system with Django (backend) and React (frontend).
+The API will be available at `http://127.0.0.1:8000/`.
 
-## Suggestions / Future Features
+## Quick API Examples
 
-The following features are planned or suggested for future development:
+List top-level user resource:
 
-- Mobile App Integration (Android/iOS)
-- Analytics Dashboard (attendance, engagement, donations)
-- Online Payments/Donations (integrate payment gateways)
-- QR Code Attendance Tracking
-- Push Notifications (mobile devices)
-- Document Management (uploads, sharing, versioning)
-- Volunteer Tracking (roles, hours, assignments)
-- Public API for Third-Party Integration
-- Multi-Language Support (internationalization)
-- Accessibility Improvements (WCAG compliance)
-- Automated Backups (database, media)
-- Query Optimization (select_related, prefetch_related, indexes)
-- API Documentation (drf-spectacular, OpenAPI)
-- Deployment Documentation (production setup, Docker, CI/CD)
-- Advanced Notification Preferences (per event/type)
-- Role-Based Custom Dashboards
-- Advanced Reporting (export to PDF/Excel)
-- Integration with External Church Systems
-- SMS Gateway Integration
-- Calendar Sync (Google/Outlook)
-- Attendance Analytics
-- Gamification/Recognition Features
-- Audit Logs for Admin Actions
-- Enhanced Security (2FA, OAuth)
-- Customizable Member Fields
-- Bulk Data Import/Export
-- Geo-location Features (map members/events)
-- Event Ticketing/RSVP
-- Resource Booking (rooms, equipment)
-- Feedback/Survey System
-- Scheduled Tasks/Reminders
-- Integration with WhatsApp/Telegram
-- Advanced Media Gallery (albums, tagging)
-- Customizable Email Templates
-- Admin Analytics Dashboard
+```bash
+curl -i http://127.0.0.1:8000/api/users/
+```
+
+Attempt an unauthenticated request to an auth endpoint:
+
+```bash
+curl -i http://127.0.0.1:8000/api/auth/register/
+```
+
+Generate an OpenAPI schema locally (requires a Python virtualenv):
+
+```bash
+# activate venv first
+python manage.py generateschema --format openapi-json --file schema.json
+```
