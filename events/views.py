@@ -4,8 +4,10 @@ from django.utils import timezone
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
+
+from authentication.permissions import IsAdminUserRole
 
 from .models import (
     Event,
@@ -31,6 +33,15 @@ class EventViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+
+        if self.action in {'register', 'cancel_registration', 'my_registrations'}:
+            return [IsAuthenticated()]
+
+        return [IsAdminUserRole()]
 
     @action(
         detail=True,
@@ -337,5 +348,5 @@ class EventRegistrationViewSet(
     )
 
     permission_classes = [
-        IsAuthenticated
+        IsAdminUserRole
     ]

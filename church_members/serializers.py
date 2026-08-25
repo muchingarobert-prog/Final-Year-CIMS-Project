@@ -2,6 +2,8 @@ from datetime import date
 
 from rest_framework import serializers
 
+from rest_framework.exceptions import ValidationError
+
 from .models import User
 
 
@@ -94,3 +96,17 @@ class UserSerializer(
                 )
             )
         )
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+
+        if not request or not request.user or not request.user.is_authenticated:
+            return attrs
+
+        restricted_fields = ['role', 'is_staff', 'is_superuser', 'is_active']
+        if not request.user.is_superuser and any(field in attrs for field in restricted_fields):
+            raise ValidationError(
+                'You are not allowed to change administrative account settings.'
+            )
+
+        return attrs

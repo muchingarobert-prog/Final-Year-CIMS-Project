@@ -5,10 +5,13 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from rest_framework.permissions import (
-    IsAuthenticated
+    IsAuthenticated,
+    SAFE_METHODS,
 )
 
 from rest_framework.response import Response
+
+from authentication.permissions import IsAdminUserRole
 
 from .models import (
     AttendanceSession,
@@ -37,6 +40,15 @@ class AttendanceSessionViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+
+        if self.action in {'check_in'}:
+            return [IsAuthenticated()]
+
+        return [IsAdminUserRole()]
 
     @action(
         detail=True,
@@ -191,6 +203,12 @@ class AttendanceRecordViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    def get_permissions(self):
+        if self.action in {'my_attendance', 'my_statistics'}:
+            return [IsAuthenticated()]
+
+        return [IsAdminUserRole()]
 
     @action(
         detail=False,

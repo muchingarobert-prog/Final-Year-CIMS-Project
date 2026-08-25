@@ -4,6 +4,8 @@ from rest_framework.permissions import (
     IsAuthenticated
 )
 
+from authentication.permissions import IsAdminUserRole
+
 from .models import AuditLog
 
 from .serializers import (
@@ -25,5 +27,5 @@ class AuditLogViewSet(
     )
 
     permission_classes = [
-        IsAuthenticated
+        IsAdminUserRole
     ]

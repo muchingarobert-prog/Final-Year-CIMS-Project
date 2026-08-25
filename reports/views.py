@@ -7,6 +7,8 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 
+from authentication.permissions import IsAdminUserRole
+
 from church_members.models import User
 
 from attendance.models import (
@@ -35,7 +37,7 @@ class ReportsView(
 ):
 
     permission_classes = [
-        IsAuthenticated
+        IsAdminUserRole
     ]
 
     def get(
@@ -81,7 +83,7 @@ class AttendanceReportView(
 ):
 
     permission_classes = [
-        IsAuthenticated
+        IsAdminUserRole
     ]
 
     def get(
@@ -133,7 +135,7 @@ class CommitteeReportView(
 ):
 
     permission_classes = [
-        IsAuthenticated
+        IsAdminUserRole
     ]
 
     def get(
@@ -176,7 +178,7 @@ class EventReportView(
 ):
 
     permission_classes = [
-        IsAuthenticated
+        IsAdminUserRole
     ]
 
     def get(
@@ -208,7 +210,7 @@ class MemberReportView(
 ):
 
     permission_classes = [
-        IsAuthenticated
+        IsAdminUserRole
     ]
 
     def get(
@@ -251,7 +253,7 @@ class FinanceReportView(
 ):
 
     permission_classes = [
-        IsAuthenticated
+        IsAdminUserRole
     ]
 
     def get(

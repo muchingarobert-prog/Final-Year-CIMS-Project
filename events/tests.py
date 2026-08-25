@@ -15,12 +15,21 @@ class EventsApiTests(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.user = User.objects.create_user(
+        cls.member = User.objects.create_user(
             username='event_user',
             email='event_user@example.com',
             password='StrongP@ssw0rd!',
             first_name='Event',
             last_name='User',
+            role='MEMBER',
+        )
+        cls.admin = User.objects.create_user(
+            username='admin_event_manager',
+            email='admin_event_manager@example.com',
+            password='StrongP@ssw0rd!',
+            first_name='Admin',
+            last_name='Manager',
+            role='ADMIN_USER',
         )
 
         cls.event = Event.objects.create(
@@ -31,14 +40,14 @@ class EventsApiTests(APITestCase):
             location='Campus Chapel',
             registration_required=True,
             max_attendees=100,
-            created_by=cls.user,
+            created_by=cls.admin,
             is_active=True,
         )
 
-    def authenticate(self):
+    def authenticate(self, user):
         response = self.client.post(
             '/api/auth/login/',
-            {'username': self.user.username, 'password': 'StrongP@ssw0rd!'},
+            {'username': user.username, 'password': 'StrongP@ssw0rd!'},
             format='json'
         )
         access = response.data['access']
@@ -48,25 +57,25 @@ class EventsApiTests(APITestCase):
         response = self.client.get('/api/events/')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_event_list_returns_data(self):
-        self.authenticate()
-        response = self.client.get('/api/events/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['title'], self.event.title)
+    def test_member_cannot_create_event(self):
+        self.authenticate(self.member)
+        payload = {
+            'title': 'Unauthorised Event',
+            'description': 'Should fail',
+            'event_type': 'SERVICE',
+            'event_date': (timezone.now() + timedelta(days=7)).strftime('%Y-%m-%dT%H:%M:%S'),
+            'location': 'Main Chapel',
+            'registration_required': False,
+            'max_attendees': 150,
+            'recurrence': 'NONE',
+            'recurrence_day': '',
+            'recurrence_end_date': '',
+        }
+        response = self.client.post('/api/events/', payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_event_register_and_cancel(self):
-        self.authenticate()
-        register_response = self.client.post(f'/api/events/{self.event.id}/register/')
-        self.assertEqual(register_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(register_response.data['message'], 'Successfully registered')
-
-        cancel_response = self.client.post(f'/api/events/{self.event.id}/cancel_registration/')
-        self.assertEqual(cancel_response.status_code, status.HTTP_200_OK)
-        self.assertTrue(cancel_response.data['removed'])
-
-    def test_weekly_recurring_event_creation(self):
-        self.authenticate()
-
+    def test_admin_can_create_event(self):
+        self.authenticate(self.admin)
         payload = {
             'title': 'Weekly Sunday Service',
             'description': 'Every Sunday morning worship.',
@@ -81,13 +90,28 @@ class EventsApiTests(APITestCase):
         }
 
         response = self.client.post('/api/events/', payload, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['recurrence'], 'WEEKLY')
         self.assertEqual(response.data['recurrence_day'], 'SUNDAY')
 
+    def test_event_list_returns_data(self):
+        self.authenticate(self.member)
+        response = self.client.get('/api/events/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['title'], self.event.title)
+
+    def test_event_register_and_cancel(self):
+        self.authenticate(self.member)
+        register_response = self.client.post(f'/api/events/{self.event.id}/register/')
+        self.assertEqual(register_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(register_response.data['message'], 'Successfully registered')
+
+        cancel_response = self.client.post(f'/api/events/{self.event.id}/cancel_registration/')
+        self.assertEqual(cancel_response.status_code, status.HTTP_200_OK)
+        self.assertTrue(cancel_response.data['removed'])
+
     def test_weekly_recurring_event_requires_recurrence_day(self):
-        self.authenticate()
+        self.authenticate(self.admin)
 
         payload = {
             'title': 'Weekly Sunday Service',
@@ -141,14 +165,15 @@ class EventsAdminFormTests(TestCase):
 class EventApiTests(APITestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.admin = User.objects.create_user(
             username='api_creator',
             email='api_creator@example.com',
             password='StrongP@ssw0rd!',
             first_name='Api',
             last_name='Creator',
+            role='ADMIN_USER',
         )
-        self.client.force_authenticate(user=self.user)
+        self.client.force_authenticate(user=self.admin)
 
     def test_api_event_creation_sets_created_by(self):
         payload = {
@@ -169,4 +194,4 @@ class EventApiTests(APITestCase):
 
         event_id = response.data['id']
         event = Event.objects.get(pk=event_id)
-        self.assertEqual(event.created_by, self.user)
+        self.assertEqual(event.created_by, self.admin)

@@ -5,10 +5,13 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from rest_framework.permissions import (
-    IsAuthenticated
+    IsAuthenticated,
+    SAFE_METHODS,
 )
 
 from rest_framework.response import Response
+
+from authentication.permissions import IsAdminUserRole
 
 from .models import (
     FinancialCategory,
@@ -39,6 +42,12 @@ class FinancialCategoryViewSet(
         IsAuthenticated
     ]
 
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+
+        return [IsAdminUserRole()]
+
 
 class IncomeViewSet(
     viewsets.ModelViewSet
@@ -56,6 +65,12 @@ class IncomeViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+
+        return [IsAdminUserRole()]
 
     def perform_create(
         self,
@@ -105,6 +120,12 @@ class ExpenseViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+
+        return [IsAdminUserRole()]
 
     def perform_create(
         self,
