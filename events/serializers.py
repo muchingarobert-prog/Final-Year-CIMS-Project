@@ -6,36 +6,6 @@ from .models import (
 )
 
 
-class EventRegistrationSerializer(
-    serializers.ModelSerializer
-):
-
-    member_name = serializers.SerializerMethodField()
-
-    class Meta:
-
-        model = EventRegistration
-
-        fields = [
-            'id',
-            'event',
-            'member',
-            'member_name',
-            'registration_date',
-            'status',
-        ]
-
-    def get_member_name(
-        self,
-        obj
-    ):
-
-        return (
-            f"{obj.member.first_name} "
-            f"{obj.member.last_name}"
-        )
-
-
 class EventSerializer(
     serializers.ModelSerializer
 ):
@@ -89,6 +59,13 @@ class EventSerializer(
             'created_at',
             'updated_at',
         ]
+
+        read_only_fields = [
+            'id',
+            'created_at',
+            'updated_at',
+        ]
+
 
     def to_internal_value(self, data):
         data = data.copy()
@@ -166,4 +143,41 @@ class EventSerializer(
         return (
             obj.max_attendees -
             obj.registrations.count()
+        )
+
+
+class EventRegistrationSerializer(
+    serializers.ModelSerializer
+):
+
+    member_name = serializers.SerializerMethodField()
+
+    class Meta:
+
+        model = EventRegistration
+
+        fields = [
+            'id',
+            'event',
+            'member',
+            'member_name',
+            'registration_date',
+            'status',
+        ]
+
+        read_only_fields = [
+            'id',
+            'member',
+            'member_name',
+            'registration_date',
+        ]
+
+    def get_member_name(
+        self,
+        obj
+    ):
+
+        return (
+            f"{obj.member.first_name} "
+            f"{obj.member.last_name}"
         )

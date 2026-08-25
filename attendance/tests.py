@@ -80,6 +80,24 @@ class AttendanceApiTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_member_cannot_modify_or_delete_attendance_record(self):
+        record = AttendanceRecord.objects.create(
+            member=self.admin,
+            session=self.session,
+            status='PRESENT',
+        )
+        self.authenticate(self.member)
+        update_response = self.client.patch(
+            f'/api/attendance/records/{record.id}/',
+            {'status': 'ABSENT'},
+            format='json',
+        )
+        delete_response = self.client.delete(
+            f'/api/attendance/records/{record.id}/'
+        )
+        self.assertEqual(update_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(delete_response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_attendance_leaderboard(self):
         self.authenticate(self.member)
         self.client.post(f'/api/attendance/sessions/{self.session.id}/check_in/')

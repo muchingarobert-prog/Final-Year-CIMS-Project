@@ -54,6 +54,25 @@ class ChurchMembersApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data), 1)
 
+    def test_private_profile_fields_are_hidden_in_user_search(self):
+        self.member.is_profile_public = False
+        self.member.phone_number = '555-0100'
+        self.member.programme_of_study = 'Private Programme'
+        self.member.save()
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get('/api/auth/search-users/?search=Member')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, [])
+
+    def test_user_can_access_own_profile_search_result(self):
+        self.member.is_profile_public = False
+        self.member.phone_number = '555-0100'
+        self.member.save()
+        self.client.force_authenticate(user=self.member)
+        response = self.client.get('/api/auth/search-users/?search=Member')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['phone_number'], '555-0100')
+
     def test_member_cannot_modify_another_user_profile(self):
         login_response = self.client.post(
             '/api/auth/login/',

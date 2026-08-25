@@ -348,5 +348,26 @@ class EventRegistrationViewSet(
     )
 
     permission_classes = [
-        IsAdminUserRole
+        IsAuthenticated
     ]
+
+    def get_queryset(self):
+        if self.request.user.role in [
+            'SUPER_USER',
+            'ADMIN_USER',
+            'HIGH_PRIVILEGE_USER'
+        ]:
+            return EventRegistration.objects.all()
+
+        return EventRegistration.objects.filter(
+            member=self.request.user
+        )
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'create', 'destroy']:
+            return [IsAuthenticated()]
+
+        return [IsAdminUserRole()]
+
+    def perform_create(self, serializer):
+        serializer.save(member=self.request.user)

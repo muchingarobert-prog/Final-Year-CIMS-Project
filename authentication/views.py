@@ -67,7 +67,9 @@ class SearchUsersView(generics.ListAPIView):
         )
 
         return User.objects.filter(
-
+            Q(is_profile_public=True) |
+            Q(pk=self.request.user.pk)
+        ).filter(
             Q(first_name__icontains=query)
 
             |

@@ -10,14 +10,14 @@ from .views import (
 router = DefaultRouter()
 
 router.register(
-    r'',
-    EventViewSet,
-    basename='events'
+    r'registrations',
+    EventRegistrationViewSet
 )
 
 router.register(
-    r'registrations',
-    EventRegistrationViewSet
+    r'',
+    EventViewSet,
+    basename='events'
 )
 
 urlpatterns = router.urls

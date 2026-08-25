@@ -3,6 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from authentication.permissions import IsHighPrivilegeOrAbove
+
 from .models import Announcement
 from .serializers import AnnouncementSerializer
 
@@ -24,6 +26,15 @@ class AnnouncementViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsHighPrivilegeOrAbove()]
+
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
 
     @action(
         detail=False,

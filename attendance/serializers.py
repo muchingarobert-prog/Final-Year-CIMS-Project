@@ -26,6 +26,25 @@ class AttendanceRecordSerializer(
             'recorded_at',
         ]
 
+        read_only_fields = [
+            'id',
+            'member_name',
+            'recorded_at',
+        ]
+
+    def get_extra_kwargs(self):
+        extra_kwargs = super().get_extra_kwargs()
+        request = self.context.get('request')
+
+        if not request or request.user.role not in [
+            'SUPER_USER',
+            'ADMIN_USER',
+            'HIGH_PRIVILEGE_USER'
+        ]:
+            extra_kwargs['member'] = {'read_only': True}
+
+        return extra_kwargs
+
     def get_member_name(
         self,
         obj

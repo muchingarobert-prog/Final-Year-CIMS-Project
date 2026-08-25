@@ -110,6 +110,26 @@ class EventsApiTests(APITestCase):
         self.assertEqual(cancel_response.status_code, status.HTTP_200_OK)
         self.assertTrue(cancel_response.data['removed'])
 
+    def test_registration_is_owned_by_authenticated_member(self):
+        self.authenticate(self.member)
+        response = self.client.post(
+            '/api/events/registrations/',
+            {'event': self.event.id, 'member': self.admin.id},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['member'], self.member.id)
+
+    def test_member_cannot_modify_another_registration(self):
+        registration = self.event.registrations.create(member=self.admin)
+        self.authenticate(self.member)
+        response = self.client.patch(
+            f'/api/events/registrations/{registration.id}/',
+            {'status': 'CANCELLED'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_weekly_recurring_event_requires_recurrence_day(self):
         self.authenticate(self.admin)
 

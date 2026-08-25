@@ -76,6 +76,13 @@ class ProfileSerializer(serializers.ModelSerializer):
             "user_permissions",
         ]
 
+        read_only_fields = [
+            "role",
+            "is_staff",
+            "is_superuser",
+            "is_active",
+        ]
+
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -100,6 +107,22 @@ class UserSerializer(serializers.ModelSerializer):
             "programme_of_study",
             "year_of_study",
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+
+        if not request or request.user != instance:
+            for field in [
+                'email',
+                'phone_number',
+                'gender',
+                'programme_of_study',
+                'year_of_study',
+            ]:
+                data.pop(field, None)
+
+        return data
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):

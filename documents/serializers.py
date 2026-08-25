@@ -15,6 +15,15 @@ class DocumentSerializer(
 
         fields = '__all__'
 
+        read_only_fields = [
+            'id',
+            'uploaded_by',
+            'uploaded_by_name',
+            'download_count',
+            'created_at',
+            'updated_at',
+        ]
+
     def get_uploaded_by_name(
         self,
         obj

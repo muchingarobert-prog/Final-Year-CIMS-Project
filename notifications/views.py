@@ -8,6 +8,8 @@ from rest_framework.permissions import (
 
 from rest_framework.response import Response
 
+from authentication.permissions import IsAdminUserRole
+
 from .models import Notification
 
 from .serializers import (
@@ -26,6 +28,12 @@ class NotificationViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAdminUserRole()]
+
+        return [IsAuthenticated()]
 
     def get_queryset(
         self

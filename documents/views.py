@@ -4,12 +4,15 @@ from django.db.models import Count
 from rest_framework import viewsets
 
 from rest_framework.permissions import (
-    IsAuthenticated
+    IsAuthenticated,
+    SAFE_METHODS,
 )
 
 from rest_framework.decorators import action
 
 from rest_framework.response import Response
+
+from authentication.permissions import IsAdminOrOwner
 
 from .models import Document
 
@@ -35,15 +38,37 @@ class DocumentViewSet(
         IsAuthenticated
     ]
 
+    def get_queryset(self):
+        queryset = Document.objects.order_by('-created_at')
+
+        if self.request.user.role in [
+            'SUPER_USER',
+            'ADMIN_USER',
+            'HIGH_PRIVILEGE_USER'
+        ]:
+            return queryset
+
+        return queryset.filter(
+            Q(is_public=True) |
+            Q(uploaded_by=self.request.user)
+        )
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS or self.action == 'create':
+            return [IsAuthenticated()]
+
+        return [IsAdminOrOwner()]
+
+    def perform_create(self, serializer):
+        serializer.save(uploaded_by=self.request.user)
+
     @action(
         detail=False,
         methods=['get']
     )
     def public(self, request):
 
-        documents = Document.objects.filter(
-            is_public=True
-        )
+        documents = self.get_queryset().filter(is_public=True)
 
         serializer = DocumentSerializer(
             documents,
@@ -60,10 +85,7 @@ class DocumentViewSet(
     )
     def recent(self, request):
 
-        documents = (
-            Document.objects
-            .order_by('-created_at')[:20]
-        )
+        documents = self.get_queryset()[:20]
 
         serializer = DocumentSerializer(
             documents,
@@ -85,7 +107,7 @@ class DocumentViewSet(
             ''
         )
 
-        documents = Document.objects.filter(
+        documents = self.get_queryset().filter(
             Q(title__icontains=query) |
             Q(description__icontains=query)
         )
@@ -109,7 +131,7 @@ class DocumentViewSet(
             'type'
         )
 
-        documents = Document.objects.filter(
+        documents = self.get_queryset().filter(
             document_type=document_type
         )
 
@@ -131,21 +153,17 @@ class DocumentViewSet(
         return Response(
             {
                 "total_documents":
-                Document.objects.count(),
+                self.get_queryset().count(),
 
                 "public_documents":
-                Document.objects.filter(
-                    is_public=True
-                ).count(),
+                self.get_queryset().filter(is_public=True).count(),
 
                 "private_documents":
-                Document.objects.filter(
-                    is_public=False
-                ).count(),
+                self.get_queryset().filter(is_public=False).count(),
 
                 "total_downloads":
                 sum(
-                    Document.objects.values_list(
+                    self.get_queryset().values_list(
                         'download_count',
                         flat=True
                     )
@@ -153,7 +171,7 @@ class DocumentViewSet(
 
                 "documents_by_type":
                 list(
-                    Document.objects
+                    self.get_queryset()
                     .values(
                         'document_type'
                     )

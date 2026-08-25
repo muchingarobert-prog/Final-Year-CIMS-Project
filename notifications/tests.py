@@ -53,3 +53,17 @@ class NotificationsApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.notification.refresh_from_db()
         self.assertTrue(self.notification.is_read)
+
+    def test_member_cannot_create_notification_for_another_user(self):
+        self.authenticate()
+        response = self.client.post(
+            '/api/notifications/',
+            {
+                'recipient': self.user.id,
+                'title': 'Spoofed notification',
+                'message': 'Should not be client-created',
+                'notification_type': 'SYSTEM',
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

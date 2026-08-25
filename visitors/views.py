@@ -2,7 +2,7 @@ from django.db.models import Count
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from authentication.permissions import IsHighPrivilegeOrAbove
 from rest_framework.response import Response
 
 from .models import Visitor
@@ -20,7 +20,7 @@ class VisitorViewSet(
     serializer_class = VisitorSerializer
 
     permission_classes = [
-        IsAuthenticated
+        IsHighPrivilegeOrAbove
     ]
 
     @action(

@@ -12,6 +12,8 @@ from rest_framework.response import (
     Response
 )
 
+from authentication.permissions import IsHighPrivilegeOrAbove
+
 from church_members.models import (
     User
 )
@@ -105,7 +107,7 @@ class DashboardAnalyticsView(
 ):
 
     permission_classes = [
-        IsAuthenticated
+        IsHighPrivilegeOrAbove
     ]
 
     def get(

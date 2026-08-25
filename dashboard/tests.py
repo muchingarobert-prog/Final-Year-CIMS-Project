@@ -78,3 +78,8 @@ class DashboardApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('top_attendees', response.data)
         self.assertIn('top_events', response.data)
+
+    def test_member_cannot_access_dashboard_analytics(self):
+        self.authenticate()
+        response = self.client.get('/api/dashboard/analytics/')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

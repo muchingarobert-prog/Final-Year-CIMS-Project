@@ -12,3 +12,10 @@ class AnnouncementSerializer(
         model = Announcement
 
         fields = '__all__'
+
+        read_only_fields = [
+            'id',
+            'created_by',
+            'created_at',
+            'updated_at',
+        ]

@@ -1,7 +1,14 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from django.db.models import Q
+
+from authentication.permissions import (
+    IsAdminOrOwner,
+    IsHighPrivilegeOrAbove,
+)
 
 from .models import (
     
@@ -26,18 +33,27 @@ from .serializers import (
 )
 
 
+def visible_posts_for(user):
+    queryset = Post.objects.filter(is_active=True)
+
+    if user.role in [
+        'SUPER_USER',
+        'ADMIN_USER',
+        'HIGH_PRIVILEGE_USER'
+    ]:
+        return queryset
+
+    return queryset.filter(
+        Q(privacy__in=['PUBLIC', 'MEMBERS']) |
+        Q(author=user)
+    )
+
+
 class PostViewSet(
     viewsets.ModelViewSet
 ):
 
-    queryset = (
-        Post.objects.filter(
-            is_active=True
-        )
-        .order_by(
-            '-created_at'
-        )
-    )
+    queryset = Post.objects.all().order_by('-created_at')
 
     serializer_class = (
         PostSerializer
@@ -46,6 +62,24 @@ class PostViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    def get_queryset(self):
+        return visible_posts_for(self.request.user).order_by('-created_at')
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated()]
+
+        if self.action in ['update', 'partial_update', 'destroy', 'deactivate']:
+            return [IsAdminOrOwner()]
+
+        if self.action == 'statistics':
+            return [IsHighPrivilegeOrAbove()]
+
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     @action(
         detail=False,
@@ -100,7 +134,7 @@ class CommentViewSet(
     viewsets.ModelViewSet
 ):
 
-    queryset = Comment.objects.all()
+    queryset = Comment.objects.select_related('post', 'author').all()
 
     serializer_class = (
         CommentSerializer
@@ -110,11 +144,33 @@ class CommentViewSet(
         IsAuthenticated
     ]
 
+    def get_queryset(self):
+        return self.queryset.filter(
+            post__in=visible_posts_for(self.request.user)
+        )
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated()]
+
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminOrOwner()]
+
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        if serializer.validated_data['post'] not in visible_posts_for(
+            self.request.user
+        ):
+            raise PermissionDenied('You cannot comment on this post.')
+
+        serializer.save(author=self.request.user)
+
 class CommentReplyViewSet(
     viewsets.ModelViewSet
 ):
 
-    queryset = CommentReply.objects.all()
+    queryset = CommentReply.objects.select_related('comment', 'author').all()
 
     serializer_class = (
         CommentReplySerializer
@@ -124,12 +180,34 @@ class CommentReplyViewSet(
         IsAuthenticated
     ]
 
+    def get_queryset(self):
+        return self.queryset.filter(
+            comment__post__in=visible_posts_for(self.request.user)
+        )
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated()]
+
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminOrOwner()]
+
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        if serializer.validated_data['comment'].post not in visible_posts_for(
+            self.request.user
+        ):
+            raise PermissionDenied('You cannot reply to this comment.')
+
+        serializer.save(author=self.request.user)
+
 
 class PostReactionViewSet(
     viewsets.ModelViewSet
 ):
 
-    queryset = PostReaction.objects.all()
+    queryset = PostReaction.objects.select_related('post', 'user').all()
 
     serializer_class = (
         PostReactionSerializer
@@ -138,6 +216,25 @@ class PostReactionViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    def get_queryset(self):
+        return self.queryset.filter(
+            post__in=visible_posts_for(self.request.user)
+        )
+
+    def perform_create(self, serializer):
+        if serializer.validated_data['post'] not in visible_posts_for(
+            self.request.user
+        ):
+            raise PermissionDenied('You cannot react to this post.')
+
+        serializer.save(user=self.request.user)
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminOrOwner()]
+
+        return [IsAuthenticated()]
 
 
 class MediaGalleryViewSet(
@@ -154,8 +251,11 @@ class MediaGalleryViewSet(
     )
 
     permission_classes = [
-        IsAuthenticated
+        IsHighPrivilegeOrAbove
     ]
+
+    def perform_create(self, serializer):
+        serializer.save(uploaded_by=self.request.user)
 
 class PrayerRequestViewSet(
     viewsets.ModelViewSet
@@ -175,6 +275,31 @@ class PrayerRequestViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    def get_queryset(self):
+        if self.request.user.role in [
+            'SUPER_USER',
+            'ADMIN_USER',
+            'HIGH_PRIVILEGE_USER'
+        ]:
+            return self.queryset
+
+        return self.queryset.filter(member=self.request.user)
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated()]
+
+        if self.action == 'answered':
+            return [IsHighPrivilegeOrAbove()]
+
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminOrOwner()]
+
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        serializer.save(member=self.request.user)
 
     @action(
         detail=True,
@@ -213,6 +338,34 @@ class TestimonyViewSet(
     permission_classes = [
         IsAuthenticated
     ]
+
+    def get_queryset(self):
+        if self.request.user.role in [
+            'SUPER_USER',
+            'ADMIN_USER',
+            'HIGH_PRIVILEGE_USER'
+        ]:
+            return self.queryset
+
+        return self.queryset.filter(
+            member=self.request.user,
+            approved=True
+        )
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [IsAuthenticated()]
+
+        if self.action == 'approve':
+            return [IsHighPrivilegeOrAbove()]
+
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAdminOrOwner()]
+
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        serializer.save(member=self.request.user)
 
     @action(
         detail=True,

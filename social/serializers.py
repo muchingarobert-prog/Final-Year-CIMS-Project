@@ -28,6 +28,13 @@ class CommentReplySerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+        read_only_fields = [
+            "id",
+            "author",
+            "author_name",
+            "created_at",
+        ]
+
     def get_author_name(self, obj):
 
         return (
@@ -62,6 +69,13 @@ class CommentSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+        read_only_fields = [
+            "id",
+            "author",
+            "author_name",
+            "created_at",
+        ]
+
     def get_author_name(self, obj):
 
         return (
@@ -88,6 +102,13 @@ class PostReactionSerializer(serializers.ModelSerializer):
             "user",
             "user_name",
             "reaction_type",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "user",
+            "user_name",
             "created_at",
         ]
 
@@ -136,6 +157,23 @@ class PostSerializer(serializers.ModelSerializer):
             "author_name",
             "privacy",
             "is_active",
+            "created_at",
+            "updated_at",
+            "comment_count",
+            "reaction_count",
+            "like_count",
+            "love_count",
+            "amen_count",
+            "pray_count",
+            "my_reaction",
+            "is_owner",
+            "comments",
+        ]
+
+        read_only_fields = [
+            "id",
+            "author",
+            "author_name",
             "created_at",
             "updated_at",
             "comment_count",
@@ -238,6 +276,13 @@ class MediaGallerySerializer(serializers.ModelSerializer):
             "uploaded_at",
         ]
 
+        read_only_fields = [
+            "id",
+            "uploaded_by",
+            "uploader_name",
+            "uploaded_at",
+        ]
+
     def get_uploader_name(self, obj):
 
         return (
@@ -264,6 +309,14 @@ class PrayerRequestSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+        read_only_fields = [
+            "id",
+            "member",
+            "member_name",
+            "created_at",
+            "is_answered",
+        ]
+
     def get_member_name(self, obj):
 
         return (
@@ -284,6 +337,14 @@ class TestimonySerializer(serializers.ModelSerializer):
             "id",
             "title",
             "content",
+            "member",
+            "member_name",
+            "approved",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
             "member",
             "member_name",
             "approved",
