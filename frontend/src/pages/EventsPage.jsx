@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
-const AUTH_TOKEN_KEY = 'cims_access_token';
-
+import { apiRequest } from '../api/client';
 const EVENT_TYPE_COLORS = {
   SERVICE: '#4f46e5', // Indigo
   MEETING: '#0891b2', // Cyan
@@ -11,39 +7,30 @@ const EVENT_TYPE_COLORS = {
   SPECIAL: '#be185d', // Pink
 };
 
-const getStoredToken = () => localStorage.getItem(AUTH_TOKEN_KEY) || '';
-
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const accessToken = getStoredToken();
-    if (!accessToken) {
-      navigate('/login');
-      return;
-    }
-    loadEvents(accessToken);
-  }, [navigate]);
+    loadEvents();
+  }, []);
 
-  const loadEvents = async (token) => {
+  const loadEvents = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/events/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) {
-        if (response.status === 401) navigate('/login');
-        return;
-      }
-      const data = await response.json();
-      setEvents(data);
+      const data = await apiRequest('/api/events/');
+      setEvents(Array.isArray(data) ? data : data?.results || []);
     } catch (err) {
-      console.error("Failed to load events", err);
+      setMessage(err.message || 'Failed to load events.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const register = async (event, action) => {
+    try { const result = await apiRequest(`/api/events/${event.id}/${action}/`, { method: 'POST' }); setMessage(result.message || 'Registration updated.'); }
+    catch (error) { setMessage(error.message); }
   };
 
   const formatFullDate = (value) => {
@@ -74,6 +61,7 @@ export default function EventsPage() {
         <h1>Upcoming Events</h1>
         <p>Discover the latest worship services, meetings, and youth programs across the congregation.</p>
       </div>
+      {message && <p className="error-message">{message}</p>}
 
       {events.length > 0 ? (
         <div className="events-grid">
@@ -129,7 +117,7 @@ export default function EventsPage() {
                     <p className="event-description">{event.description}</p>
                   )}
 
-                  <button className="register-btn" style={{ backgroundColor: typeColor }}>
+                  <button className="register-btn" style={{ backgroundColor: typeColor }} onClick={() => event.registration_required && register(event, 'register')}>
                     {event.registration_required ? 'Register Now' : 'View Details'}
                   </button>
                 </div>

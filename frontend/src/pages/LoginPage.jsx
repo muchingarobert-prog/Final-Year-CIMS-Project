@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -9,6 +8,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -16,31 +16,8 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/login/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ 
-          username: username.trim(), 
-          password: password 
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || data.message || `Server error: ${response.status}`);
-      }
-
-      if (data.access) {
-        localStorage.setItem('cims_access_token', data.access);
-        localStorage.setItem('cims_refresh_token', data.refresh);
-        navigate('/dashboard');
-      } else {
-        throw new Error('No token received from server');
-      }
+      await login({ username: username.trim(), password });
+      navigate('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
       setError(err.message || 'Failed to connect to backend. Make sure Django is running on port 8000.');

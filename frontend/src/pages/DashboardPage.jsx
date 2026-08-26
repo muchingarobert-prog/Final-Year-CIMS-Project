@@ -1,34 +1,25 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+import { apiRequest } from '../api/client';
+import Loading from '../components/Loading';
+import ErrorMessage from '../components/ErrorMessage';
 
 export default function DashboardPage() {
   const [userData, setUserData] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('cims_access_token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    fetch(`${API_BASE}/api/auth/dashboard/`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.ok ? res.json() : Promise.reject())
+    apiRequest('/api/auth/dashboard/')
     .then(data => {
       setUserData(data.user || {});
       setStats(data.statistics || {});
     })
-    .catch(err => console.error("Dashboard error:", err))
+    .catch(err => setError(err.message || 'Unable to load dashboard.'))
     .finally(() => setLoading(false));
-  }, [navigate]);
+  }, []);
 
-  if (loading) return <div className="loading-screen"><div className="spinner"></div></div>;
+  if (loading) return <Loading message="Loading dashboard..." />;
 
   const userName = userData?.first_name || userData?.username || 'Member';
 
@@ -49,6 +40,7 @@ export default function DashboardPage() {
         <h3>Welcome, {userName}!</h3>
         <p>Select a module from the sidebar to get started</p>
       </div>
+      {error && <ErrorMessage message={error} />}
 
       {/* Quick Stats */}
       <div className="quick-stats-section">

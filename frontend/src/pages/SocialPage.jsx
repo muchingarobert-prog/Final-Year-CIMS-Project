@@ -1,0 +1,15 @@
+import { useEffect, useState } from 'react';
+import { apiRequest } from '../api/client';
+import ErrorMessage from '../components/ErrorMessage';
+import Loading from '../components/Loading';
+import EmptyState from '../components/EmptyState';
+
+const list = (value) => Array.isArray(value) ? value : value?.results || [];
+export default function SocialPage() {
+  const [posts, setPosts] = useState([]); const [prayers, setPrayers] = useState([]); const [testimonies, setTestimonies] = useState([]); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [form, setForm] = useState({ title: '', content: '' });
+  const load = () => Promise.all([apiRequest('/api/social/posts/'), apiRequest('/api/social/prayer-requests/'), apiRequest('/api/social/testimonies/')]).then(([postData, prayerData, testimonyData]) => { setPosts(list(postData)); setPrayers(list(prayerData)); setTestimonies(list(testimonyData)); }).catch((e) => setError(e.message)).finally(() => setLoading(false));
+  useEffect(load, []);
+  const submit = async (event) => { event.preventDefault(); setError(''); try { await apiRequest('/api/social/posts/', { method: 'POST', body: JSON.stringify({ ...form, privacy: 'MEMBERS' }) }); setForm({ title: '', content: '' }); setLoading(true); load(); } catch (e) { setError(e.message); } };
+  if (loading) return <Loading message="Loading community activity..." />;
+  return <div className="page-container"><div className="page-header"><h1>Community</h1><p>Share fellowship, prayer, and testimonies with the congregation.</p></div>{error && <ErrorMessage message={error} />}<form className="form-panel" onSubmit={submit}><h2>Share a post</h2><input placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required /><textarea placeholder="What would you like to share?" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows="3" required /><button className="btn btn-primary">Publish</button></form><section><h2>Posts</h2>{posts.length ? <div className="list-grid">{posts.map((post) => <article className="card" key={post.id}><h3>{post.title}</h3><p>{post.content}</p><small>{post.author_name} · {post.comment_count} comments · {post.reaction_count} reactions</small></article>)}</div> : <EmptyState title="No community posts" />}</section><section><h2>Prayer requests</h2>{prayers.length ? <div className="list-grid">{prayers.map((prayer) => <article className="card" key={prayer.id}><h3>{prayer.title}</h3><p>{prayer.request}</p><small>{prayer.is_answered ? 'Answered' : 'Open'} · {prayer.member_name}</small></article>)}</div> : <EmptyState title="No prayer requests" />}</section><section><h2>Testimonies</h2>{testimonies.length ? <div className="list-grid">{testimonies.map((testimony) => <article className="card" key={testimony.id}><h3>{testimony.title}</h3><p>{testimony.content}</p><small>{testimony.approved ? 'Approved' : 'Awaiting approval'} · {testimony.member_name}</small></article>)}</div> : <EmptyState title="No testimonies" />}</section></div>;
+}

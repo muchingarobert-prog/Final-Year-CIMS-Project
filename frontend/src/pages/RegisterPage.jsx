@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+import { apiRequest } from '../api/client';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -32,24 +31,10 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/register/`, {
+      const data = await apiRequest('/api/auth/register/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
         body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Handle validation errors
-        const errorMessages = Object.values(data)
-          .flat()
-          .join(', ');
-        throw new Error(errorMessages || `Registration failed: ${response.status}`);
-      }
+      }, true);
 
       setSuccess('Registration successful! Redirecting to login...');
       setTimeout(() => {

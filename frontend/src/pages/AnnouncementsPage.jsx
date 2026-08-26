@@ -1,34 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+import { apiRequest } from '../api/client';
 
 export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState([]);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
-
   useEffect(() => {
-    const token = localStorage.getItem('cims_access_token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    fetch(`${API_BASE}/api/announcements/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (response) => {
-        if (response.status === 401) {
-          navigate('/login');
-          return null;
-        }
-        if (!response.ok) throw new Error('Unable to load announcements.');
-        return response.json();
-      })
+    apiRequest('/api/announcements/')
       .then((data) => setAnnouncements(Array.isArray(data) ? data : data?.results || []))
       .catch((requestError) => setError(requestError.message));
-  }, [navigate]);
+  }, []);
 
   return (
     <div className="page-container">

@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
-const AUTH_TOKEN_KEY = 'cims_access_token';
-
-const getStoredToken = () => localStorage.getItem(AUTH_TOKEN_KEY) || '';
+import { apiRequest } from '../api/client';
 
 export default function CommitteesPage() {
   const [committees, setCommittees] = useState([]);
@@ -12,34 +8,26 @@ export default function CommitteesPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const accessToken = getStoredToken();
-    if (!accessToken) {
-      navigate('/login');
-      return;
-    }
-    loadCommittees(accessToken);
+    loadCommittees();
   }, [navigate]);
 
-  const loadCommittees = async (token) => {
+  const loadCommittees = async () => {
     setMessage('Loading committees...');
     try {
-      const response = await fetch(`${API_BASE}/api/committees/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        if (response.status === 401) {
-          navigate('/login');
-          return;
-        }
-        throw new Error(`${response.status}`);
-      }
-      const data = await response.json();
-      setCommittees(data);
+      const data = await apiRequest('/api/committees/');
+      setCommittees(Array.isArray(data) ? data : data?.results || []);
       setMessage(`Loaded ${data.length} committees.`);
     } catch (err) {
       setMessage(`Committee load failed: ${err.message}`);
+    }
+  };
+
+  const updateMembership = async (committee, action) => {
+    try {
+      const result = await apiRequest(`/api/committees/${committee.id}/${action}/`, { method: action === 'leave' ? 'DELETE' : 'POST' });
+      setMessage(result.message || `Committee ${action} request complete.`);
+    } catch (error) {
+      setMessage(error.message);
     }
   };
 
@@ -56,6 +44,7 @@ export default function CommitteesPage() {
               <h3>{committee.name}</h3>
               <p>{committee.description || 'No description available.'}</p>
               <p>Status: {committee.is_active ? 'Active' : 'Inactive'}</p>
+              <div className="button-row"><button className="btn btn-primary" onClick={() => updateMembership(committee, 'join')}>Join</button><button className="btn btn-secondary" onClick={() => updateMembership(committee, 'leave')}>Leave</button></div>
             </div>
           ))}
         </div>

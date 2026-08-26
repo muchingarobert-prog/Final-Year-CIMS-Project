@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+import { logout as clearRemoteSession } from '../api/auth';
 
 export default function Sidebar({ onLogout }) {
   const location = useLocation();
@@ -8,30 +7,27 @@ export default function Sidebar({ onLogout }) {
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/events', label: 'Events', icon: '' },
-    { path: '/committees', label: 'Committees', icon: '' },
+    { path: '/events', label: 'Events', icon: 'CAL' },
+    { path: '/committees', label: 'Committees', icon: 'COM' },
     { path: '/members', label: 'Members', icon: '👥' },
     { path: '/attendance', label: 'Attendance', icon: '✅' },
     { path: '/announcements', label: 'Announcements', icon: '📢' },
+    { path: '/notifications', label: 'Notifications', icon: '🔔' },
+    { path: '/documents', label: 'Documents', icon: 'DOC' },
+    { path: '/social', label: 'Community', icon: 'SOC' },
+    { path: '/profile', label: 'My Profile', icon: 'ME' },
+    { path: '/visitors', label: 'Visitors', icon: 'VIS' },
+    { path: '/finances', label: 'Finances', icon: 'FIN' },
+    { path: '/reports', label: 'Reports', icon: 'REP' },
   ];
 
   const handleLogout = async () => {
-    const refresh = localStorage.getItem('cims_refresh_token');
-    const token = localStorage.getItem('cims_access_token');
-    if (refresh && token) {
-      await fetch(`${API_BASE}/api/auth/logout/`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ refresh }),
-      }).catch(() => {});
+    try {
+      await clearRemoteSession();
+    } finally {
+      if (onLogout) onLogout();
+      navigate('/login');
     }
-    localStorage.removeItem('cims_access_token');
-    localStorage.removeItem('cims_refresh_token');
-    onLogout();
-    navigate('/');
   };
 
   return (
