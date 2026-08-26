@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from church_members.models import User
-from committees.models import Committee
+from committees.models import Committee, CommitteeMembership
 
 
 class CommitteesApiTests(APITestCase):
@@ -54,3 +54,18 @@ class CommitteesApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['id'], self.committee.id)
         self.assertEqual(response.data[0]['members'], 0)
+
+    def test_committee_join_request_and_member_statistics(self):
+        self.authenticate()
+        join_response = self.client.post(f'/api/committees/{self.committee.id}/join/')
+        self.assertEqual(join_response.status_code, status.HTTP_202_ACCEPTED)
+        membership = CommitteeMembership.objects.get(
+            committee=self.committee,
+            user=self.user,
+        )
+        self.assertFalse(membership.is_active)
+        stats_response = self.client.get(
+            f'/api/committees/{self.committee.id}/member_statistics/'
+        )
+        self.assertEqual(stats_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(stats_response.data['members'], 0)

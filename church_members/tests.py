@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.urls import reverse
 
 from rest_framework import status
@@ -53,6 +55,18 @@ class ChurchMembersApiTests(APITestCase):
         response = self.client.get('/api/users/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data), 1)
+
+    def test_member_can_access_birthday_endpoints(self):
+        self.member.date_of_birth = date.today()
+        self.member.save(update_fields=['date_of_birth'])
+        self.client.force_authenticate(user=self.member)
+        for endpoint in [
+            'birthday_today',
+            'birthday_week',
+            'birthday_month',
+        ]:
+            response = self.client.get(f'/api/users/{endpoint}/')
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_private_profile_fields_are_hidden_in_user_search(self):
         self.member.is_profile_public = False

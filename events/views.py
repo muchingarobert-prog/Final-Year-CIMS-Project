@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 
 from authentication.permissions import IsAdminUserRole
+from .services import calendar_bounds, expand_recurring_events
 
 from .models import (
     Event,
@@ -42,6 +43,15 @@ class EventViewSet(
             return [IsAuthenticated()]
 
         return [IsAdminUserRole()]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        event_type = self.request.query_params.get('event_type')
+
+        if event_type:
+            queryset = queryset.filter(event_type=event_type)
+
+        return queryset
 
     @action(
         detail=True,
@@ -219,8 +229,13 @@ class EventViewSet(
         request
     ):
 
-        events = Event.objects.all().order_by(
-            'event_date'
+        month = int(request.query_params.get('month', timezone.now().month))
+        year = int(request.query_params.get('year', timezone.now().year))
+        start, end = calendar_bounds(year, month)
+        events = expand_recurring_events(
+            self.get_queryset().filter(event_date__lt=end),
+            start,
+            end,
         )
 
         serializer = EventSerializer(
@@ -232,6 +247,28 @@ class EventViewSet(
             serializer.data
         )
 
+    @action(detail=False, methods=['get'])
+    def monthly(self, request):
+        return self.calendar(request)
+
+    @action(detail=False, methods=['get'])
+    def weekly(self, request):
+        start = timezone.now()
+        if request.query_params.get('date'):
+            start = timezone.datetime.fromisoformat(
+                request.query_params['date']
+            )
+            if timezone.is_naive(start):
+                start = timezone.make_aware(start)
+        start = start - timedelta(days=start.weekday())
+        end = start + timedelta(days=7)
+        events = expand_recurring_events(
+            self.get_queryset().filter(event_date__lt=end),
+            start,
+            end,
+        )
+        return Response(EventSerializer(events, many=True).data)
+
     @action(
         detail=False,
         methods=['get']
@@ -241,7 +278,7 @@ class EventViewSet(
         request
     ):
 
-        events = Event.objects.filter(
+        events = self.get_queryset().filter(
             event_date__gte=timezone.now()
         ).order_by(
             'event_date'
@@ -267,7 +304,7 @@ class EventViewSet(
 
         today = timezone.now().date()
 
-        events = Event.objects.filter(
+        events = self.get_queryset().filter(
             event_date__date=today
         ).order_by(
             'event_date'
@@ -298,7 +335,7 @@ class EventViewSet(
             timedelta(days=7)
         )
 
-        events = Event.objects.filter(
+        events = self.get_queryset().filter(
             event_date__range=(
                 today,
                 end_of_week

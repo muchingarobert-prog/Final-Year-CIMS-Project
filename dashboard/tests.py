@@ -21,6 +21,7 @@ class DashboardApiTests(APITestCase):
             password='StrongP@ssw0rd!',
             first_name='Dashboard',
             last_name='User',
+            role='HIGH_PRIVILEGE_USER',
         )
 
         cls.event = Event.objects.create(
@@ -80,6 +81,12 @@ class DashboardApiTests(APITestCase):
         self.assertIn('top_events', response.data)
 
     def test_member_cannot_access_dashboard_analytics(self):
-        self.authenticate()
+        member = User.objects.create_user(
+            username='dashboard_member',
+            email='dashboard_member@example.com',
+            password='StrongP@ssw0rd!',
+            role='MEMBER',
+        )
+        self.client.force_authenticate(user=member)
         response = self.client.get('/api/dashboard/analytics/')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

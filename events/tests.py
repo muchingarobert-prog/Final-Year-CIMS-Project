@@ -100,6 +100,19 @@ class EventsApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data[0]['title'], self.event.title)
 
+    def test_monthly_and_weekly_calendar_endpoints_return_events(self):
+        self.authenticate(self.member)
+        month_response = self.client.get(
+            f'/api/events/calendar/?year={self.event.event_date.year}&month={self.event.event_date.month}'
+        )
+        weekly_response = self.client.get(
+            f'/api/events/weekly/?date={self.event.event_date.date().isoformat()}'
+        )
+        self.assertEqual(month_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(weekly_response.status_code, status.HTTP_200_OK)
+        self.assertTrue(any(item['id'] == self.event.id for item in month_response.data))
+        self.assertTrue(any(item['id'] == self.event.id for item in weekly_response.data))
+
     def test_event_register_and_cancel(self):
         self.authenticate(self.member)
         register_response = self.client.post(f'/api/events/{self.event.id}/register/')

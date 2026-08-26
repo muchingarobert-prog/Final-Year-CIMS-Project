@@ -70,7 +70,8 @@ class CommitteeViewSet(
         membership, created = (
             CommitteeMembership.objects.get_or_create(
                 user=request.user,
-                committee=committee
+                committee=committee,
+                defaults={'is_active': False}
             )
         )
 
@@ -79,15 +80,16 @@ class CommitteeViewSet(
             return Response(
                 {
                     "message":
-                    "Already a member"
+                    "Already a member or request pending"
                 }
             )
 
         return Response(
             {
                 "message":
-                "Successfully joined committee"
-            }
+                "Committee join request submitted"
+            },
+            status=202
         )
 
     @action(
@@ -143,6 +145,38 @@ class CommitteeViewSet(
         return Response(
             serializer.data
         )
+
+    @action(detail=True, methods=['get'])
+    def member_statistics(self, request, pk=None):
+        committee = self.get_object()
+        memberships = committee.memberships.filter(is_active=True)
+        return Response({
+            'committee': committee.id,
+            'members': memberships.count(),
+            'leaders': memberships.filter(position__isnull=False).count(),
+        })
+
+    @action(detail=True, methods=['get'])
+    def announcements(self, request, pk=None):
+        from announcements.models import Announcement
+        from announcements.serializers import AnnouncementSerializer
+
+        announcements = Announcement.objects.filter(
+            committee=self.get_object(),
+            is_active=True,
+        ).select_related('created_by').order_by('-created_at')
+        return Response(AnnouncementSerializer(announcements, many=True).data)
+
+    @action(detail=True, methods=['get'])
+    def dashboard(self, request, pk=None):
+        committee = self.get_object()
+        memberships = committee.memberships.filter(is_active=True)
+        return Response({
+            'committee': CommitteeSerializer(committee).data,
+            'member_count': memberships.count(),
+            'leadership_count': memberships.filter(position__isnull=False).count(),
+            'announcement_count': committee.announcement_set.filter(is_active=True).count(),
+        })
 
     @action(
         detail=True,
@@ -249,6 +283,10 @@ class CommitteeMembershipViewSet(
         IsHighPrivilegeOrAbove
     ]
 
+    queryset = CommitteeMembership.objects.select_related(
+        'user', 'committee', 'position'
+    ).all()
+
     @action(
         detail=True,
         methods=['post']
@@ -294,3 +332,21 @@ class CommitteeMembershipViewSet(
                 "Membership activated"
             }
         )
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        membership = self.get_object()
+        membership.is_active = True
+        membership.save(update_fields=['is_active'])
+        return Response({'message': 'Committee join request approved'})
+
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        membership = self.get_object()
+        membership.delete()
+        return Response({'message': 'Committee join request rejected'})
+
+    @action(detail=False, methods=['get'])
+    def pending(self, request):
+        pending = self.get_queryset().filter(is_active=False)
+        return Response(self.get_serializer(pending, many=True).data)

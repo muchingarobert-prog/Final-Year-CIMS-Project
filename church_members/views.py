@@ -1,4 +1,5 @@
 from datetime import date
+from datetime import timedelta
 
 from django.db.models import Q
 from django.db.models import Count
@@ -11,6 +12,7 @@ from authentication.permissions import IsAdminUserRole
 
 from .models import User
 from .serializers import UserSerializer
+from .serializers_birthday import BirthdaySerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -24,6 +26,17 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [
         IsAdminUserRole
     ]
+
+    def get_permissions(self):
+        if self.action in [
+            'birthdays',
+            'birthday_today',
+            'birthday_week',
+            'birthday_month',
+        ]:
+            from rest_framework.permissions import IsAuthenticated
+            return [IsAuthenticated()]
+        return [IsAdminUserRole()]
 
     @action(
         detail=False,
@@ -39,7 +52,7 @@ class UserViewSet(viewsets.ModelViewSet):
             'date_of_birth'
         )
 
-        serializer = UserSerializer(
+        serializer = BirthdaySerializer(
             users,
             many=True
         )
@@ -47,6 +60,30 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data
         )
+
+    @action(detail=False, methods=['get'])
+    def birthday_today(self, request):
+        today = date.today()
+        users = User.objects.filter(
+            date_of_birth__month=today.month,
+            date_of_birth__day=today.day,
+        )
+        return Response(BirthdaySerializer(users, many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def birthday_week(self, request):
+        today = date.today()
+        days = {(today + timedelta(days=offset)).timetuple().tm_yday for offset in range(7)}
+        users = [
+            user for user in User.objects.exclude(date_of_birth=None)
+            if user.date_of_birth.timetuple().tm_yday in days
+        ]
+        return Response(BirthdaySerializer(users, many=True).data)
+
+    @action(detail=False, methods=['get'])
+    def birthday_month(self, request):
+        users = User.objects.filter(date_of_birth__month=date.today().month)
+        return Response(BirthdaySerializer(users, many=True).data)
 
     @action(
         detail=False,
