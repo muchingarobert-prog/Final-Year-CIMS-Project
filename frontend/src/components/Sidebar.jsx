@@ -1,9 +1,13 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { logout as clearRemoteSession } from '../api/auth';
+import { useAuth } from '../context/AuthContext';
 
-export default function Sidebar({ onLogout }) {
+const managementRoles = ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER'];
+
+export default function Sidebar({ onLogout, isOpen = false, onNavigate = () => {} }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -16,10 +20,12 @@ export default function Sidebar({ onLogout }) {
     { path: '/documents', label: 'Documents', icon: 'DOC' },
     { path: '/social', label: 'Community', icon: 'SOC' },
     { path: '/profile', label: 'My Profile', icon: 'ME' },
-    { path: '/visitors', label: 'Visitors', icon: 'VIS' },
-    { path: '/finances', label: 'Finances', icon: 'FIN' },
-    { path: '/reports', label: 'Reports', icon: 'REP' },
+    { path: '/visitors', label: 'Visitors', icon: 'VIS', roles: managementRoles },
+    { path: '/finances', label: 'Finance', icon: 'FIN', roles: managementRoles },
+    { path: '/reports', label: 'Reports', icon: 'REP', roles: managementRoles },
   ];
+
+  const visibleItems = menuItems.filter((item) => !item.roles || item.roles.includes(user?.role));
 
   const handleLogout = async () => {
     try {
@@ -31,17 +37,18 @@ export default function Sidebar({ onLogout }) {
   };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
       <div className="sidebar-header">
-        <img src="/images/church-emblem.png" alt="UNZA CIMS" className="sidebar-logo" />
-        <h2>UNZA CIMS</h2>
+        <img src="/images/church-emblem.png" alt="New Apostolic Church emblem" className="sidebar-logo" />
+        <div className="brand-lockup"><strong>New Apostolic Church</strong><span>UNZA</span></div>
       </div>
       <nav className="sidebar-nav">
-        {menuItems.map((item) => (
+        {visibleItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
             className={`sidebar-link ${location.pathname === item.path ? 'active' : ''}`}
+            onClick={onNavigate}
           >
             <span className="sidebar-icon">{item.icon}</span>
             <span className="sidebar-text">{item.label}</span>
