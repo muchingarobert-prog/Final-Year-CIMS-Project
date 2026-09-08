@@ -10,19 +10,19 @@ export default function Sidebar({ onLogout, isOpen = false, onNavigate = () => {
   const { user } = useAuth();
 
   const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/events', label: 'Events', icon: 'CAL' },
-    { path: '/committees', label: 'Committees', icon: 'COM' },
-    { path: '/members', label: 'Members', icon: '👥' },
-    { path: '/attendance', label: 'Attendance', icon: '✅' },
-    { path: '/announcements', label: 'Announcements', icon: '📢' },
-    { path: '/notifications', label: 'Notifications', icon: '🔔' },
-    { path: '/documents', label: 'Documents', icon: 'DOC' },
-    { path: '/social', label: 'Community', icon: 'SOC' },
-    { path: '/profile', label: 'My Profile', icon: 'ME' },
-    { path: '/visitors', label: 'Visitors', icon: 'VIS', roles: managementRoles },
-    { path: '/finances', label: 'Finance', icon: 'FIN', roles: managementRoles },
-    { path: '/reports', label: 'Reports', icon: 'REP', roles: managementRoles },
+    { path: '/dashboard', label: 'Dashboard', icon: '◈' },
+    { path: '/events', label: 'Events', icon: '◫' },
+    { path: '/committees', label: 'Committees', icon: '⌘' },
+    { path: '/members', label: 'Members', icon: '◎' },
+    { path: '/attendance', label: 'Attendance', icon: '✓' },
+    { path: '/announcements', label: 'Announcements', icon: '!' },
+    { path: '/notifications', label: 'Notifications', icon: '◇' },
+    { path: '/documents', label: 'Documents', icon: '▤' },
+    { path: '/social', label: 'Community', icon: '◌' },
+    { path: '/profile', label: 'My Profile', icon: '◉' },
+    { path: '/visitors', label: 'Visitors', icon: '↗', roles: managementRoles },
+    { path: '/finances', label: 'Finance', icon: '¤', roles: managementRoles },
+    { path: '/reports', label: 'Reports', icon: '▥', roles: managementRoles },
   ];
 
   const visibleItems = menuItems.filter((item) => !item.roles || item.roles.includes(user?.role));
@@ -56,7 +56,7 @@ export default function Sidebar({ onLogout, isOpen = false, onNavigate = () => {
         ))}
       </nav>
       <button type="button" className="sidebar-link sidebar-logout" onClick={handleLogout}>
-        <span className="sidebar-icon">↪</span>
+        <span className="sidebar-icon">↩</span>
         <span className="sidebar-text">Logout</span>
       </button>
     </aside>

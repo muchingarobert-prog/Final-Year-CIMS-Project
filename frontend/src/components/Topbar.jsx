@@ -37,7 +37,7 @@ export default function Topbar({ onMenuClick }) {
     <header className="topbar">
       <div className="topbar-leading">
         <button type="button" className="icon-button mobile-menu-button" onClick={onMenuClick} aria-label="Open navigation menu">
-          <span aria-hidden="true">☰</span>
+          <span aria-hidden="true">≡</span>
         </button>
         <div className="page-context">
           <span className="breadcrumb">UNZA / Workspace</span>
@@ -46,7 +46,7 @@ export default function Topbar({ onMenuClick }) {
       </div>
       <div className="topbar-actions">
         <Link to="/notifications" className="icon-button notification-button" aria-label="Open notifications">
-          <span aria-hidden="true">♢</span>
+          <span aria-hidden="true">◇</span>
         </Link>
         <div className="profile-menu-wrapper">
           <button type="button" className="profile-trigger" onClick={() => setMenuOpen((open) => !open)} aria-expanded={menuOpen} aria-haspopup="menu">
