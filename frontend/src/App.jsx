@@ -19,6 +19,11 @@ import VisitorsPage from './pages/VisitorsPage.jsx';
 import FinancesPage from './pages/FinancesPage.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
 import SocialPage from './pages/SocialPage.jsx';
+import ProtectedRoute from './components/ProtectedRoute';
+import RoleRoute from './components/RoleRoute';
+
+const adminRoles = ['SUPER_USER', 'ADMIN_USER'];
+const highPrivilegeRoles = ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER'];
 
 function AuthenticatedApp() {
   const { logout, isAuthenticated, isLoading } = useAuth();
@@ -27,38 +32,28 @@ function AuthenticatedApp() {
     return <Loading message="Restoring your session..." />;
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div className="public-area">
-        <Routes>
-          <Route path="/" element={<OverviewPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
-    );
-  }
-
   return (
-    <AppShell onLogout={logout}>
+    <div className={isAuthenticated ? undefined : 'public-area'}>
       <Routes>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/events" element={<EventsPage />} />
-        <Route path="/committees" element={<CommitteesPage />} />
-        <Route path="/members" element={<MembersPage />} />
-        <Route path="/announcements" element={<AnnouncementsPage />} />
-        <Route path="/attendance" element={<AttendancePage />} />
-        <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/documents" element={<DocumentsPage />} />
-        <Route path="/visitors" element={<VisitorsPage />} />
-        <Route path="/finances" element={<FinancesPage />} />
-        <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/social" element={<SocialPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<OverviewPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/dashboard" element={<ProtectedRoute><AppShell onLogout={logout}><DashboardPage /></AppShell></ProtectedRoute>} />
+        <Route path="/events" element={<ProtectedRoute><AppShell onLogout={logout}><EventsPage /></AppShell></ProtectedRoute>} />
+        <Route path="/committees" element={<ProtectedRoute><AppShell onLogout={logout}><CommitteesPage /></AppShell></ProtectedRoute>} />
+        <Route path="/members" element={<ProtectedRoute><AppShell onLogout={logout}><MembersPage /></AppShell></ProtectedRoute>} />
+        <Route path="/announcements" element={<ProtectedRoute><AppShell onLogout={logout}><AnnouncementsPage /></AppShell></ProtectedRoute>} />
+        <Route path="/attendance" element={<ProtectedRoute><AppShell onLogout={logout}><AttendancePage /></AppShell></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><AppShell onLogout={logout}><NotificationsPage /></AppShell></ProtectedRoute>} />
+        <Route path="/documents" element={<ProtectedRoute><AppShell onLogout={logout}><DocumentsPage /></AppShell></ProtectedRoute>} />
+        <Route path="/finances" element={<ProtectedRoute><AppShell onLogout={logout}><FinancesPage /></AppShell></ProtectedRoute>} />
+        <Route path="/social" element={<ProtectedRoute><AppShell onLogout={logout}><SocialPage /></AppShell></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><AppShell onLogout={logout}><ProfilePage /></AppShell></ProtectedRoute>} />
+        <Route path="/visitors" element={<RoleRoute allow={highPrivilegeRoles}><AppShell onLogout={logout}><VisitorsPage /></AppShell></RoleRoute>} />
+        <Route path="/reports" element={<RoleRoute allow={adminRoles}><AppShell onLogout={logout}><ReportsPage /></AppShell></RoleRoute>} />
+        <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/'} replace />} />
       </Routes>
-    </AppShell>
+    </div>
   );
 }
 

@@ -1,8 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { logout as clearRemoteSession } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 
-const managementRoles = ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER'];
+const visitorRoles = ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER'];
+const reportRoles = ['SUPER_USER', 'ADMIN_USER'];
 
 export default function Sidebar({ onLogout, isOpen = false, onNavigate = () => {} }) {
   const location = useLocation();
@@ -20,18 +20,17 @@ export default function Sidebar({ onLogout, isOpen = false, onNavigate = () => {
     { path: '/documents', label: 'Documents', icon: '▤' },
     { path: '/social', label: 'Community', icon: '◌' },
     { path: '/profile', label: 'My Profile', icon: '◉' },
-    { path: '/visitors', label: 'Visitors', icon: '↗', roles: managementRoles },
-    { path: '/finances', label: 'Finance', icon: '¤', roles: managementRoles },
-    { path: '/reports', label: 'Reports', icon: '▥', roles: managementRoles },
+    { path: '/visitors', label: 'Visitors', icon: '↗', roles: visitorRoles },
+    { path: '/finances', label: 'Finance', icon: '¤' },
+    { path: '/reports', label: 'Reports', icon: '▥', roles: reportRoles },
   ];
 
   const visibleItems = menuItems.filter((item) => !item.roles || item.roles.includes(user?.role));
 
   const handleLogout = async () => {
     try {
-      await clearRemoteSession();
+      await onLogout?.();
     } finally {
-      if (onLogout) onLogout();
       navigate('/login');
     }
   };
