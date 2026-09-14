@@ -1,78 +1,110 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiRequest } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import Loading from '../components/Loading';
 import ErrorMessage from '../components/ErrorMessage';
+import EmptyState from '../components/EmptyState';
+
+const asList = (value) => Array.isArray(value) ? value : (value?.results || value?.data || []);
+const firstNumber = (...values) => values.find((value) => typeof value === 'number' && Number.isFinite(value));
+const initials = (name) => name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || '?';
+const dateValue = (value) => value ? new Date(value) : null;
+const formatTime = (value) => value ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(dateValue(value)) : 'Time TBC';
+const displayName = (item) => item.full_name || [item.first_name, item.last_name].filter(Boolean).join(' ') || item.username || 'Member';
+
+const fallbackData = {
+  totalMembers: 0, newMembersThisMonth: 'No new members this month', membersGrowthLabel: '+', memberCapacityPercent: 78,
+  attendanceAvg: 0, attendancePercent: 88, capacitySeats: 415, attendanceSparkline: [60, 75, 68, 82, 90, 88],
+  committees: [], analytics: [], events: [], announcements: [], birthdays: [], memberships: [], testimonies: [], prayers: [],
+};
 
 export default function DashboardPage() {
-  const [userData, setUserData] = useState(null);
-  const [stats, setStats] = useState(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [perspective, setPerspective] = useState(() => ({ SUPER_USER: 'superuser', ADMIN_USER: 'admin', HIGH_PRIVILEGE_USER: 'committee' }[user?.role] || 'member'));
+  const [data, setData] = useState(fallbackData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    apiRequest('/api/auth/dashboard/')
-    .then(data => {
-      setUserData(data.user || {});
-      setStats(data.statistics || {});
-    })
-    .catch(err => setError(err.message || 'Unable to load dashboard.'))
-    .finally(() => setLoading(false));
+    let active = true;
+    const request = async (path, fallback = []) => {
+      try { return await apiRequest(path); } catch (err) { console.error(`Dashboard request failed: ${path}`, err); return fallback; }
+    };
+    const load = async () => {
+      const results = await Promise.all([
+        request('/api/users/statistics/', {}), request('/api/users/recent_members/'), request('/api/attendance/sessions/leaderboard/', {}),
+        request('/api/attendance/sessions/'), request('/api/committees/'), request('/api/committees/analytics/'), request('/api/committees/memberships/?is_active=false'),
+        request('/api/social/testimonies/?approved=false'), request('/api/social/prayer-requests/?is_answered=false'), request('/api/events/upcoming/'),
+        request('/api/announcements/latest/'), request('/api/users/birthdays/'),
+      ]);
+      if (!active) return;
+      const [memberStats, recent, leaderboard, sessions, committees, analytics, memberships, testimonies, prayers, events, announcements, birthdays] = results;
+      const recentList = asList(recent);
+      const committeeList = asList(committees);
+      const analyticsList = asList(analytics);
+      const attendanceList = asList(sessions);
+      const attendanceValue = firstNumber(leaderboard?.average, leaderboard?.average_attendance, leaderboard?.attendance_avg, leaderboard?.count) ||
+        (attendanceList.length ? Math.round(attendanceList.reduce((sum, item) => sum + (firstNumber(item.attendee_count, item.attendance_count, item.count) || 0), 0) / attendanceList.length) : 0);
+      const today = new Date();
+      const upcomingBirthdays = asList(birthdays).filter((item) => item.date_of_birth).map((item) => {
+        const birthDate = dateValue(item.date_of_birth); const next = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+        if (next < new Date(today.getFullYear(), today.getMonth(), today.getDate())) next.setFullYear(today.getFullYear() + 1);
+        const days = Math.round((next - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000);
+        return { ...item, fullName: displayName(item), initials: initials(displayName(item)), days, isToday: days === 0, whenLabel: days === 0 ? 'Celebrating Today!' : `In ${days} days` };
+      }).filter((item) => item.days <= 7);
+      if (active) setData({
+        ...fallbackData, totalMembers: firstNumber(memberStats?.total_members, memberStats?.active_members, memberStats?.members, memberStats?.total) || 0,
+        newMembersThisMonth: recentList.length ? `${recentList.length} recent members` : 'No new members this month', membersGrowthLabel: recentList.length ? `+${recentList.length}` : '+',
+        attendanceAvg: attendanceValue, attendancePercent: attendanceValue ? Math.min(100, Math.round(attendanceValue / 415 * 100)) : 88,
+        committees: committeeList, analytics: analyticsList, memberships: asList(memberships), testimonies: asList(testimonies), prayers: asList(prayers),
+        events: asList(events).slice(0, 3), announcements: asList(announcements).slice(0, 3), birthdays: upcomingBirthdays,
+      });
+      setLoading(false);
+    };
+    load().catch((err) => { console.error('Dashboard loading failed', err); if (active) { setError('Some dashboard data could not be loaded.'); setLoading(false); } });
+    return () => { active = false; };
   }, []);
 
   if (loading) return <Loading message="Loading dashboard..." />;
-
-  const userName = userData?.first_name || userData?.username || 'Member';
-
+  const firstName = user?.first_name || user?.username || 'friend';
+  const perspectiveLabel = { member: 'Member', committee: 'Committee', admin: 'Admin', superuser: 'Super User' }[perspective];
+  const upcomingEvents = data.events.map((event, index) => { const date = dateValue(event.event_date); return { ...event, weekdayShort: date ? new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date) : 'TBC', dayNumber: date ? date.getDate() : '—', timeRange: formatTime(event.event_date), category: event.event_type || 'Gathering', rsvpLabel: event.attendee_count ?? '—', actionLabel: event.registration_required ? 'Check In' : 'Details', is_featured: index === 0 }; });
+  const nextEvent = upcomingEvents[0];
+  const nextEventSummary = nextEvent ? `Next gathering: ${nextEvent.title} • ${nextEvent.timeRange} • ${nextEvent.location || 'Location TBC'}` : 'No gatherings scheduled';
+  const committeeMembersTotal = data.committees.reduce((sum, committee) => sum + (firstNumber(committee.total_members, committee.members) || 0), 0);
+  const leadCommitteeName = data.analytics[0]?.name || data.committees[0]?.name || 'No committee assigned';
+  const pendingTestimonies = data.testimonies.filter((item) => item.approved !== true).length;
+  const pendingPrayers = data.prayers.filter((item) => item.is_answered !== true).length;
+  const pendingApprovalsTotal = data.memberships.filter((item) => item.is_active === false).length + pendingTestimonies;
+  const recentAnnouncements = data.announcements.map((item) => ({ ...item, category: item.category || 'Notice', body: item.content || item.body || item.description || '', title: item.title || 'Congregation bulletin', relativeTime: item.created_at ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(dateValue(item.created_at)) : '', authorInitials: initials(item.created_by_name || 'CIMS'), authorLine: item.created_by_name || 'Pastoral desk', audienceLabel: item.audience || 'Congregation' }));
+  const spotlight = null;
+  const verse = { text: 'Let your light shine before others, that they may see your good deeds and glorify your Father in heaven.', reference: 'Matthew 5:16' };
+  const activeClass = 'px-3 py-1.5 rounded-md bg-surface-container-lowest text-primary font-label-md text-label-md font-semibold shadow-sm';
+  const inactiveClass = 'px-3 py-1.5 rounded-md text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-all';
   return (
-    <div className="professional-dashboard">
-      {/* Church Branding Section */}
-      <div className="church-branding-section">
-        <div className="church-emblem-container">
-          <img src="/images/church-emblem.png" alt="Church Emblem" className="main-church-emblem" />
-          <h1 className="church-main-title">New Apostolic Church</h1>
-          <h2 className="church-subtitle">UNZA Congregation</h2>
-          <p className="church-tagline">Congregation Information Management System</p>
-        </div>
+    <main className="w-full flex-1 pt-topbar-height bg-surface px-space-lg py-space-lg max-w-content-max-width mx-auto">
+      <div className="flex flex-col w-full gap-space-lg">
+        {error && <ErrorMessage message={error} />}
+        <div className="flex flex-wrap items-center justify-between gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded-xl shadow-sm"><div className="flex items-center gap-space-xs min-w-0"><span className="material-symbols-outlined text-secondary text-lg">supervised_user_circle</span><span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Viewing Perspective:</span><span className="font-label-md text-label-md text-on-surface font-semibold truncate">{perspectiveLabel}</span></div><div className="flex items-center gap-1.5 p-0.5 bg-surface-container rounded-lg" id="role-perspective-tabs">{['member', 'committee', 'admin', 'superuser'].map((role) => <button key={role} className={perspective === role ? activeClass : inactiveClass} onClick={() => setPerspective(role)} type="button">{role === 'superuser' ? 'Super User' : role[0].toUpperCase() + role.slice(1)}</button>)}</div></div>
+        <div className="relative overflow-hidden rounded-xl bg-primary text-on-primary shadow-xl"><div className="absolute -right-16 -bottom-16 w-80 h-80 rounded-full bg-secondary/20 blur-3xl pointer-events-none" /><div className="absolute -left-12 -top-12 w-64 h-64 rounded-full bg-tertiary-fixed/15 blur-2xl pointer-events-none" /><div className="relative z-10 p-space-xl flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-xl"><div className="flex flex-col gap-space-xs max-w-2xl"><div className="flex items-center gap-space-xs"><span className="px-2.5 py-0.5 rounded-full font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed font-semibold tracking-wide uppercase">Ecclesiastical Pastoral Desk</span><span className="font-label-sm text-label-sm text-on-primary-container">• Great East Campus</span></div><h1 className="font-display-lg text-display-lg text-on-primary tracking-tight">Welcome back, {firstName}!</h1><p className="font-body-lg text-body-lg text-on-primary-container leading-relaxed">Grace and peace be with you. The student body stands at {data.totalMembers} active souls under pastoral leadership this semester.</p><div className="relative pl-space-md py-1 my-1 bg-primary-container/40 rounded-r-lg"><div className="absolute left-0 top-0 bottom-0 w-1 bg-tertiary-fixed rounded-full" /><p className="font-body-md text-body-md text-on-primary italic">&quot;Trust in the LORD with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.&quot;</p><span className="font-label-sm text-label-sm text-tertiary-fixed font-semibold tracking-wider uppercase mt-1 block">Proverbs 3:5-6 (ESV)</span></div><div className="flex items-center gap-space-xs pt-1"><span className="material-symbols-outlined text-tertiary-fixed text-base">church</span><span className="font-label-md text-label-md text-on-primary font-medium">{nextEventSummary}</span></div></div><div className="flex flex-col sm:flex-row lg:flex-col gap-space-xs flex-shrink-0"><button className="inline-flex items-center justify-center gap-2 px-space-md py-2.5 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed hover:bg-tertiary-fixed-dim font-label-lg text-label-lg transition-all shadow-md" type="button" onClick={() => navigate('/announcements')}><span className="material-symbols-outlined text-lg">campaign</span><span>Post Announcement</span></button><button className="inline-flex items-center justify-center gap-2 px-space-md py-2.5 rounded-lg bg-surface-container-lowest text-primary hover:bg-surface-container font-label-lg text-label-lg transition-all shadow-sm" type="button" onClick={() => navigate('/attendance')}><span className="material-symbols-outlined text-lg">fact_check</span><span>Take Attendance</span></button><button className="inline-flex items-center justify-center gap-2 px-space-md py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-secondary transition-all font-label-lg text-label-lg" type="button" onClick={() => navigate('/events')}><span className="material-symbols-outlined text-lg">menu_book</span><span>View Today&apos;s Program</span></button></div></div></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">{[
+          ['groups', 'Total Active Members', data.totalMembers, data.newMembersThisMonth, data.membersGrowthLabel, 'bg-secondary-fixed text-on-secondary-fixed'],
+          ['how_to_reg', 'Sunday Attendance Avg', data.attendanceAvg, `Capacity: ${data.capacitySeats} seats`, `${data.attendancePercent}% Capacity`, 'bg-surface-container text-primary'],
+          ['diversity_3', 'Active Committees', committeeMembersTotal, 'Assigned volunteers', `${data.committees.length} Units`, 'bg-surface-container text-primary'],
+          ['pending_actions', 'Pending Approvals', pendingApprovalsTotal, 'Submissions queue', 'Requires Action', 'bg-tertiary-fixed text-on-tertiary-fixed'],
+        ].map(([icon, label, value, subtext, badge, iconClass], index) => <div key={label} className="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-space-sm relative overflow-hidden">{index === 3 && <div className="absolute top-0 left-0 right-0 h-1 bg-tertiary-fixed" />}<div className="flex items-start justify-between"><div className={`w-10 h-10 rounded-lg ${iconClass} flex items-center justify-center`}><span className="material-symbols-outlined text-xl">{icon}</span></div><span className={`px-2 py-0.5 rounded-full font-label-sm text-label-sm ${index === 3 ? 'bg-tertiary-fixed text-on-tertiary-fixed' : 'bg-surface-container-high text-secondary'} font-semibold`}>{badge}</span></div><div><span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block">{label}</span><div className="flex items-baseline gap-2 mt-1"><span className="font-display-lg text-display-lg text-primary font-tabular-nums">{value}</span><span className="font-body-sm text-body-sm text-on-surface-variant">{subtext}</span></div></div><div className="w-full bg-surface-container rounded-full h-1.5 overflow-hidden"><div className={`${index === 3 ? 'bg-tertiary-fixed' : 'bg-secondary'} h-1.5 rounded-full`} style={{ width: `${index === 0 ? data.memberCapacityPercent : index === 1 ? data.attendancePercent : index === 2 ? Math.min(100, data.committees.length * 10) : Math.min(100, pendingApprovalsTotal * 10)}%` }} /></div></div>)}</div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg"><div className="lg:col-span-8 flex flex-col gap-space-lg min-w-0">
+          <section className="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md"><div className="flex items-center justify-between"><div className="flex items-center gap-space-xs"><span className="material-symbols-outlined text-secondary text-2xl">admin_panel_settings</span><div><h2 className="font-headline-sm text-headline-sm text-primary">Youth Leader Administration Controls</h2><span className="font-body-sm text-body-sm text-on-surface-variant">Direct operational actions with executive campus privileges</span></div></div><span className="hidden sm:inline-block px-2.5 py-1 rounded-full font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed font-semibold">Tier 2 Admin</span></div><div className="grid grid-cols-2 sm:grid-cols-4 gap-space-sm pt-space-xs">{[['payments', 'Record Offering', 'Youth & General Tithes', '/finances/income'], ['badge', 'Manage Roster', 'Assign Ushers & Choir', '/members'], ['sms', 'Broadcast SMS', 'Campus Flash Alerts'], ['verified', 'Review Queue', `${pendingApprovalsTotal} Pending Items`, '/social/testimonies']].map(([icon, title, subtitle, path]) => <button key={title} className="group p-space-sm rounded-lg bg-surface-container-low hover:bg-surface-container flex flex-col items-center text-center gap-space-xs transition-all" type="button" onClick={() => path && navigate(path)}><div className="w-10 h-10 rounded-full bg-surface-container-lowest text-secondary group-hover:scale-110 group-hover:bg-secondary group-hover:text-on-secondary transition-all flex items-center justify-center shadow-sm"><span className="material-symbols-outlined text-xl">{icon}</span></div><span className="font-label-md text-label-md text-on-surface font-semibold">{title}</span><span className="font-label-sm text-label-sm text-on-surface-variant">{subtitle}</span></button>)}</div></section>
+          <section className="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md"><div className="flex items-center justify-between"><div className="flex items-center gap-space-xs"><span className="material-symbols-outlined text-secondary text-2xl">event_upcoming</span><div><h2 className="font-headline-sm text-headline-sm text-primary">Scheduled Gatherings & Activities</h2><span className="font-body-sm text-body-sm text-on-surface-variant">Upcoming 7-day collegiate ecclesiastical schedule</span></div></div><button className="font-label-sm text-label-sm text-secondary hover:underline font-semibold" type="button" onClick={() => navigate('/events/calendar')}>Full Calendar</button></div><div className="flex flex-col gap-space-sm">{upcomingEvents.map((event) => <div key={event.id} className="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md"><div className="flex items-center gap-space-md"><div className="w-12 h-14 rounded-lg bg-surface-container-lowest flex flex-col items-center justify-center text-center shadow-sm flex-shrink-0"><span className="font-label-sm text-label-sm uppercase font-bold">{event.weekdayShort}</span><span className="font-headline-md text-headline-md font-tabular-nums leading-none">{event.dayNumber}</span></div><div><div className="flex items-center gap-2"><span className="px-2 py-0.5 rounded-full font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed">{event.category}</span><span className="font-label-sm text-label-sm text-on-surface-variant">{event.timeRange}</span></div><h3 className="font-headline-sm text-headline-sm text-on-surface mt-0.5">{event.title}</h3><span className="font-body-sm text-body-sm text-on-surface-variant">{event.location || 'Location TBC'}</span></div></div><div className="flex items-center gap-space-sm self-end sm:self-center"><span className="font-label-sm text-label-sm text-on-surface-variant">{event.rsvpLabel}</span><button className="px-space-sm py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container-high text-primary font-label-md text-label-md transition-all shadow-sm" type="button" onClick={() => navigate(`/events/${event.id}`)}>{event.actionLabel}</button></div></div>)}{upcomingEvents.length === 0 && <EmptyState title="No upcoming events" description="There are no events scheduled for the next 7 days." />}</div></section>
+          <section className="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md"><div className="flex items-center justify-between"><div className="flex items-center gap-space-xs"><span className="material-symbols-outlined text-secondary text-2xl">feed</span><h2 className="font-headline-sm text-headline-sm text-primary">Recent Congregation Bulletins</h2></div><button className="font-label-sm text-label-sm text-secondary hover:underline font-semibold" type="button" onClick={() => navigate('/announcements')}>View Archive</button></div><div className="space-y-space-md">{recentAnnouncements.map((announcement) => <div key={announcement.id} className="p-space-md rounded-lg bg-surface-container-low flex flex-col gap-space-xs"><div className="flex flex-wrap items-center justify-between gap-2"><div className="flex items-center gap-2"><span className="px-2 py-0.5 rounded-full font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed">{announcement.category}</span><span className="font-headline-sm text-headline-sm text-on-surface font-semibold">{announcement.title}</span></div><span className="font-label-sm text-label-sm text-on-surface-variant">{announcement.relativeTime}</span></div><p className="font-body-md text-body-md text-on-surface-variant">{announcement.body}</p><div className="flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-primary text-on-primary font-label-sm flex items-center justify-center font-bold">{announcement.authorInitials}</span><span className="font-label-sm text-label-sm text-on-surface font-medium">{announcement.authorLine}</span></div></div>)}{recentAnnouncements.length === 0 && <EmptyState title="No recent bulletins" />}</div></section>
+        </div><div className="lg:col-span-4 flex flex-col gap-space-lg min-w-0">
+          <section className="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md"><div className="flex items-center justify-between"><div className="flex items-center gap-space-xs"><span className="material-symbols-outlined text-secondary text-2xl">celebration</span><h2 className="font-headline-sm text-headline-sm text-primary">Member Birthdays</h2></div><span className="px-2 py-0.5 rounded-full font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed">This Week</span></div><p className="font-body-sm text-body-sm text-on-surface-variant">Keep congregants in prayer and convey warm pastoral blessings.</p><div className="space-y-space-sm">{data.birthdays.map((birthday) => <div key={birthday.id} className="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between gap-space-xs"><div className="flex items-center gap-space-xs min-w-0"><div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-bold">{birthday.initials}</div><div className="flex flex-col min-w-0"><span className="font-label-md text-label-md text-on-surface font-semibold truncate">{birthday.fullName}</span><span className={`${birthday.isToday ? 'text-error font-semibold' : 'text-on-surface-variant'} font-label-sm`}>{birthday.whenLabel}</span></div></div><button className="px-2.5 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-secondary-fixed text-secondary font-label-sm transition-all shadow-sm" type="button"><span className="material-symbols-outlined text-sm">send</span> {birthday.isToday ? 'Send Blessing' : 'SMS'}</button></div>)}{data.birthdays.length === 0 && <EmptyState title="No birthdays this week" />}</div></section>
+          <section className="p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md"><div className="flex items-center justify-between"><div className="flex items-center gap-space-xs"><span className="material-symbols-outlined text-secondary text-2xl">assignment_turned_in</span><h2 className="font-headline-sm text-headline-sm text-primary">Committee Spotlight</h2></div><span className="font-label-sm text-label-sm text-secondary font-semibold">Priority 1</span></div>{spotlight ? <div>{spotlight.name}</div> : <EmptyState title="No committee spotlight" description="Assign a priority committee to display its progress here." />}</section>
+          <section className="p-space-lg rounded-xl bg-primary text-on-primary shadow-sm flex flex-col justify-between gap-space-md relative overflow-hidden"><div className="flex items-center justify-between relative z-10"><span className="font-label-sm text-label-sm text-tertiary-fixed font-bold tracking-wider uppercase">Verse of the Day</span><span className="font-label-sm text-label-sm text-on-primary-container">Ecclesiastical Lectionary</span></div><div className="relative z-10"><p className="font-headline-sm text-headline-sm text-on-primary italic leading-relaxed">{verse.text}</p><span className="font-label-md text-label-md text-tertiary-fixed font-semibold mt-2 block">{verse.reference}</span></div><div className="flex items-center justify-between relative z-10 pt-2"><button className="font-label-sm text-label-sm text-on-primary-container" type="button" onClick={() => navigator.clipboard.writeText(`${verse.text} — ${verse.reference}`)}>Copy Text</button><button className="px-space-sm py-1.5 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed font-label-sm font-semibold" type="button" onClick={() => navigate('/social/posts')}>Share to Ministry</button></div></section>
+        </div></div>
       </div>
-
-      {/* Welcome Section */}
-      <div className="welcome-section">
-        <h3>Welcome, {userName}!</h3>
-        <p>Select a module from the sidebar to get started</p>
-      </div>
-      {error && <ErrorMessage message={error} />}
-
-      {/* Quick Stats */}
-      <div className="quick-stats-section">
-        <div className="stat-card-blue">
-          <div className="stat-icon">📅</div>
-          <div className="stat-info">
-            <div className="stat-number">{stats?.events || 0}</div>
-            <div className="stat-label">Upcoming Events</div>
-          </div>
-        </div>
-        <div className="stat-card-blue">
-          <div className="stat-icon">👥</div>
-          <div className="stat-info">
-            <div className="stat-number">{stats?.committees || 0}</div>
-            <div className="stat-label">My Committees</div>
-          </div>
-        </div>
-        <div className="stat-card-blue">
-          <div className="stat-icon">✅</div>
-          <div className="stat-info">
-            <div className="stat-number">{stats?.attendance || 0}</div>
-            <div className="stat-label">Attendance</div>
-          </div>
-        </div>
-        <div className="stat-card-blue">
-          <div className="stat-icon">🔔</div>
-          <div className="stat-info">
-            <div className="stat-number">{stats?.unread_notifications || 0}</div>
-            <div className="stat-label">Notifications</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </main>
   );
 }
