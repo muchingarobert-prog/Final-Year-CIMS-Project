@@ -1,31 +1,61 @@
 import { useEffect, useState } from 'react';
 import { apiRequest } from '../api/client';
+import Loading from '../components/Loading';
+import ErrorMessage from '../components/ErrorMessage';
+import EmptyState from '../components/EmptyState';
+
+const formatDate = (value) => {
+  if (!value) return 'Date not specified';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+};
 
 export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     apiRequest('/api/announcements/')
       .then((data) => setAnnouncements(Array.isArray(data) ? data : data?.results || []))
-      .catch((requestError) => setError(requestError.message));
+      .catch((requestError) => setError(requestError.message || 'Unable to load announcements.'))
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <Loading message="Loading announcements..." />;
 
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1>Announcements</h1>
-        <p>Keep up with congregation-wide messages and important updates.</p>
+        <div>
+          <h1>Announcements</h1>
+          <p>Keep up with congregation-wide updates and important activity.</p>
+        </div>
       </div>
-      {error && <p className="error-message">{error}</p>}
-      <div className="list-grid">
-        {announcements.map((announcement) => (
-          <article key={announcement.id} className="card">
-            <h2>{announcement.title}</h2>
-            <p>{announcement.content || announcement.message}</p>
-          </article>
-        ))}
-      </div>
-      {!error && announcements.length === 0 && <p>No announcements are available.</p>}
+
+      {error && <ErrorMessage message={error} />}
+
+      {!error && announcements.length === 0 && (
+        <EmptyState title="No announcements available" description="There are no congregation announcements to show right now." />
+      )}
+
+      {!error && announcements.length > 0 && (
+        <div className="data-list">
+          {announcements.map((announcement) => (
+            <article key={announcement.id} className="card">
+              <div className="card-meta">
+                <span className="status-badge status-info">{announcement.target_type === 'COMMITTEE' ? 'Committee' : 'Congregation'}</span>
+                <time dateTime={announcement.created_at || announcement.posted_at}>{formatDate(announcement.created_at || announcement.posted_at)}</time>
+              </div>
+              <div>
+                <h2>{announcement.title || 'Congregation announcement'}</h2>
+                <p>{announcement.content || announcement.message || announcement.description || 'No announcement details were provided.'}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

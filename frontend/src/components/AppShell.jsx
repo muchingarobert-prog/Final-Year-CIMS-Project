@@ -12,7 +12,7 @@ export default function AppShell({ children, onLogout }) {
       {sidebarOpen && <button type="button" className="sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-label="Close navigation menu" />}
       <div className="main-area">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="content-area">{children || <Outlet />}</main>
+        <main className="content-area" id="main-content">{children || <Outlet />}</main>
       </div>
     </div>
   );
