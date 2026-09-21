@@ -4,42 +4,42 @@
 :root {
 	--font-sans: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
 
-	--color-background: #f8f9ff;
-	--color-surface: #f8f9ff;
-	--color-surface-dim: #cbdbf5;
-	--color-surface-bright: #f8f9ff;
+	--color-background: #F8F9FF;
+	--color-surface: #F8F9FF;
+	--color-surface-dim: #CBDBF5;
+	--color-surface-bright: #ffffff;
 	--color-surface-container-lowest: #ffffff;
-	--color-surface-container-low: #eff4ff;
-	--color-surface-container: #e5eeff;
-	--color-surface-container-high: #dce9ff;
-	--color-surface-container-highest: #d3e4fe;
-	--color-on-surface: #0b1c30;
-	--color-on-surface-variant: #45464e;
+	--color-surface-container-low: #EFF4FF;
+	--color-surface-container: #E5EEFF;
+	--color-surface-container-high: #DCE9FF;
+	--color-surface-container-highest: #D3E4FE;
+	--color-on-surface: #0B1C30;
+	--color-on-surface-variant: #45464E;
 	--color-inverse-surface: #213145;
-	--color-inverse-on-surface: #eaf1ff;
-	--color-outline: #75777f;
-	--color-outline-variant: #c5c6cf;
-	--color-surface-tint: #4f5e81;
+	--color-inverse-on-surface: #EAF1FF;
+	--color-outline: #75777F;
+	--color-outline-variant: #C5C6CF;
+	--color-surface-tint: #4F5E81;
 	--color-primary: #041534;
 	--color-on-primary: #ffffff;
-	--color-primary-container: #1b2a4a;
-	--color-on-primary-container: #8392b7;
-	--color-secondary: #055db6;
+	--color-primary-container: #1B2A4A;
+	--color-on-primary-container: #8392B7;
+	--color-secondary: #055DB6;
 	--color-on-secondary: #ffffff;
-	--color-secondary-container: #65a1fe;
+	--color-secondary-container: #65A1FE;
 	--color-on-secondary-container: #003670;
-	--color-secondary-fixed: #d6e3ff;
-	--color-secondary-fixed-dim: #a9c7ff;
-	--color-on-secondary-fixed: #001b3d;
-	--color-on-secondary-fixed-variant: #00468c;
+	--color-secondary-fixed: #D6E3FF;
+	--color-secondary-fixed-dim: #A9C7FF;
+	--color-on-secondary-fixed: #001B3D;
+	--color-on-secondary-fixed-variant: #00468C;
 	--color-tertiary: #211400;
 	--color-on-tertiary: #ffffff;
-	--color-tertiary-container: #3b2700;
-	--color-on-tertiary-container: #b48b40;
-	--color-tertiary-fixed: #ffdea9;
-	--color-tertiary-fixed-dim: #eebf6f;
+	--color-tertiary-container: #3B2700;
+	--color-on-tertiary-container: #B48B40;
+	--color-tertiary-fixed: #FFDEA9;
+	--color-tertiary-fixed-dim: #EEBF6F;
 	--color-on-tertiary-fixed: #271900;
-	--color-on-tertiary-fixed-variant: #5f4100;
+	--color-on-tertiary-fixed-variant: #5F4100;
 	--color-error: #ba1a1a;
 	--color-on-error: #ffffff;
 	--color-error-container: #ffdad6;
@@ -103,12 +103,12 @@
 	--space-2xl: 3rem;
 	--space-3xl: 4rem;
 
-	--sidebar-width-expanded: 17.5rem;
-	--sidebar-width-collapsed: 4.5rem;
-	--topbar-height: 4.25rem;
-	--content-max-width: 90rem;
-	--gutter-desktop: 1.5rem;
-	--gutter-mobile: 1rem;
+	--sidebar-width-expanded: 280px;
+	--sidebar-width-collapsed: 72px;
+	--topbar-height: 68px;
+	--content-max-width: 1440px;
+	--gutter-desktop: 24px;
+	--gutter-mobile: 16px;
 
 	--radius-sm: 0.25rem;
 	--radius-md: 0.5rem;
@@ -148,6 +148,10 @@ body {
 	line-height: 1.375rem;
 	-webkit-font-smoothing: antialiased;
 	font-feature-settings: "tnum" on, "cv05" on;
+}
+
+body {
+	overflow-x: hidden;
 }
 
 button,

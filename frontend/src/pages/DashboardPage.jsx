@@ -18,6 +18,15 @@ const formatEventDate = (value) => formatDate(value, { weekday: 'short', month: 
 const formatEventTime = (value) => formatDate(value, { hour: 'numeric', minute: '2-digit' });
 const formatNotificationDate = (value) => formatDate(value, { month: 'short', day: 'numeric' });
 
+const formatRole = (role) => role
+  ? role.replaceAll('_', ' ').toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase())
+  : 'Member';
+
+const getAnnouncementCategory = (targetType) => ({
+  COMMITTEE: 'Committee',
+  CONGREGATION: 'Congregation',
+}[targetType] || null);
+
 const sourceRequests = [
   ['summary', '/api/dashboard/'],
   ['events', '/api/events/upcoming/'],
@@ -51,6 +60,18 @@ function SectionHeading({ icon, title, linkTo, linkLabel }) {
       </div>
       {linkTo && <Link className="dashboard-section-link" to={linkTo}>{linkLabel}</Link>}
     </div>
+  );
+}
+
+function UnavailablePanel({ icon, title, description }) {
+  return (
+    <section className="dashboard-panel dashboard-unavailable-panel">
+      <SectionHeading icon={icon} title={title} />
+      <div className="dashboard-unavailable-state">
+        <span className="material-symbols-outlined" aria-hidden="true">info</span>
+        <p>{description}</p>
+      </div>
+    </section>
   );
 }
 
@@ -94,18 +115,31 @@ export default function DashboardPage() {
   const visibleAnnouncements = data.announcements.slice(0, 3);
   const visibleNotifications = data.notifications.slice(0, 4);
   const isAdmin = ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER'].includes(user?.role);
+  const nextEvent = data.events[0];
 
   return (
     <div className="page-container dashboard-page">
       {failedSources.length > 0 && <ErrorMessage message="Some dashboard information is temporarily unavailable. Available sections are still shown." />}
 
+      <section className="dashboard-perspective-bar" aria-label="Current workspace perspective">
+        <div className="dashboard-perspective-label"><span className="material-symbols-outlined" aria-hidden="true">verified_user</span><span><strong>Viewing Perspective</strong><small>UNZA Congregation</small></span></div>
+        <span className="dashboard-role-pill">{formatRole(user?.role)}</span>
+      </section>
+
       <section className="dashboard-welcome">
-        <div>
-          <span className="dashboard-eyebrow">UNZA congregation</span>
+        <div className="dashboard-welcome-copy">
+          <span className="dashboard-eyebrow">New Apostolic Church · UNZA</span>
           <h1>Welcome back, {firstName}</h1>
-          <p>Keep an eye on the latest events, announcements, and congregation activity.</p>
+          <p>Stay close to the latest congregation activity, gatherings, and communications from the UNZA campus.</p>
+          {nextEvent && <div className="dashboard-next-gathering"><span className="material-symbols-outlined" aria-hidden="true">event_upcoming</span><span><strong>Next gathering</strong>{nextEvent.title || 'Congregation event'} · {formatEventDate(nextEvent.event_date)}</span></div>}
         </div>
-        <span className="material-symbols-outlined dashboard-welcome-icon" aria-hidden="true">church</span>
+        <div className="dashboard-welcome-actions">
+          <span className="material-symbols-outlined dashboard-welcome-icon" aria-hidden="true">church</span>
+          <div className="dashboard-hero-actions">
+            <Link to="/events" className="dashboard-hero-action"><span className="material-symbols-outlined" aria-hidden="true">calendar_month</span>View events</Link>
+            <Link to="/announcements" className="dashboard-hero-action"><span className="material-symbols-outlined" aria-hidden="true">campaign</span>Read updates</Link>
+          </div>
+        </div>
       </section>
 
       <section aria-labelledby="dashboard-summary-title">
@@ -124,79 +158,47 @@ export default function DashboardPage() {
       </section>
 
       <div className="dashboard-content-grid">
-        <section className="dashboard-panel" aria-labelledby="upcoming-events-title">
-          <SectionHeading icon="event_upcoming" title="Upcoming events" linkTo="/events" linkLabel="View all" />
-          {data.events.length === 0 ? (
-            <EmptyState title="No upcoming events" description="New congregation events will appear here when scheduled." />
-          ) : (
-            <div className="dashboard-event-list">
-              {data.events.slice(0, 5).map((event) => (
-                <Link className="dashboard-event-row" to="/events" key={event.id}>
-                  <div className="dashboard-date-block" aria-hidden="true">
-                    <span>{formatDate(event.event_date, { month: 'short' })}</span>
-                    <strong>{formatDate(event.event_date, { day: 'numeric' }).replace(/\D/g, '') || '—'}</strong>
-                  </div>
-                  <div className="dashboard-event-details">
-                    <strong>{event.title || 'Congregation event'}</strong>
-                    <span>{formatEventDate(event.event_date)} · {formatEventTime(event.event_date)}</span>
-                    <small>{event.location || 'Location to be confirmed'}</small>
-                  </div>
-                  <span className="material-symbols-outlined dashboard-row-arrow" aria-hidden="true">chevron_right</span>
-                </Link>
-              ))}
+        <div className="dashboard-main-column">
+          <section className="dashboard-panel dashboard-fast-tools" aria-labelledby="fast-tools-title">
+            <SectionHeading icon="bolt" title="Administrative fast tools" />
+            <div className="dashboard-action-list">
+              <Link to="/events"><span className="material-symbols-outlined" aria-hidden="true">calendar_add_on</span>Browse events</Link>
+              <Link to="/members"><span className="material-symbols-outlined" aria-hidden="true">person_search</span>Member directory</Link>
+              <Link to="/announcements"><span className="material-symbols-outlined" aria-hidden="true">campaign</span>Announcements</Link>
+              {isAdmin && <Link to="/reports"><span className="material-symbols-outlined" aria-hidden="true">bar_chart</span>Reports</Link>}
             </div>
-          )}
-        </section>
+          </section>
 
-        <section className="dashboard-panel" aria-labelledby="announcements-title">
-          <SectionHeading icon="campaign" title="Announcements" linkTo="/announcements" linkLabel="View all" />
-          {visibleAnnouncements.length === 0 ? (
-            <EmptyState title="No announcements" description="There are no active announcements to show." />
-          ) : (
-            <div className="dashboard-announcement-list">
-              {visibleAnnouncements.map((announcement) => (
-                <article className="dashboard-announcement" key={announcement.id}>
-                  <div className="dashboard-announcement-meta">
-                    <span>{announcement.target_type === 'COMMITTEE' ? 'Committee' : 'Congregation'}</span>
-                    <time dateTime={announcement.created_at}>{formatNotificationDate(announcement.created_at)}</time>
-                  </div>
-                  <h3>{announcement.title || 'Congregation announcement'}</h3>
-                  {(announcement.content || announcement.description) && <p>{announcement.content || announcement.description}</p>}
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
+          <section className="dashboard-panel" aria-labelledby="upcoming-events-title">
+            <SectionHeading icon="event_upcoming" title="Upcoming events" linkTo="/events" linkLabel="View all" />
+            {data.events.length === 0 ? <EmptyState title="No upcoming events" description="New congregation events will appear here when scheduled." /> : <div className="dashboard-event-list">
+              {data.events.slice(0, 5).map((event) => <Link className="dashboard-event-row" to="/events" key={event.id}>
+                <div className="dashboard-date-block" aria-hidden="true"><span>{formatDate(event.event_date, { weekday: 'short' })}</span><strong>{formatDate(event.event_date, { day: 'numeric' }).replace(/\D/g, '') || '—'}</strong><small>{formatDate(event.event_date, { month: 'short' })}</small></div>
+                <div className="dashboard-event-details"><div className="dashboard-event-title-row"><strong>{event.title || 'Congregation event'}</strong>{(event.event_type || event.type || event.status) && <span className="dashboard-data-badge">{event.event_type || event.type || event.status}</span>}</div><span>{formatEventDate(event.event_date)} · {formatEventTime(event.event_date)}</span><small>{event.location || 'Location to be confirmed'}</small></div>
+                <span className="material-symbols-outlined dashboard-row-arrow" aria-hidden="true">chevron_right</span>
+              </Link>)}
+            </div>}
+          </section>
 
-        <section className="dashboard-panel" aria-labelledby="notifications-title">
-          <SectionHeading icon="notifications" title="Recent notifications" linkTo="/notifications" linkLabel="View all" />
-          {visibleNotifications.length === 0 ? (
-            <EmptyState title="No notifications" description="You are all caught up." />
-          ) : (
-            <div className="dashboard-notification-list">
-              {visibleNotifications.map((notification) => (
-                <Link className={`dashboard-notification${notification.is_read ? '' : ' unread'}`} to="/notifications" key={notification.id}>
-                  <span className="material-symbols-outlined" aria-hidden="true">{notification.is_read ? 'notifications_none' : 'notifications_active'}</span>
-                  <div>
-                    <strong>{notification.title || notification.notification_type || 'Notification'}</strong>
-                    <p>{notification.message || notification.content || 'You have a new congregation update.'}</p>
-                  </div>
-                  <time dateTime={notification.created_at}>{formatNotificationDate(notification.created_at)}</time>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
+          <section className="dashboard-panel" aria-labelledby="announcements-title">
+            <SectionHeading icon="campaign" title="Recent congregation bulletins" linkTo="/announcements" linkLabel="View all" />
+            {visibleAnnouncements.length === 0 ? <EmptyState title="No announcements" description="There are no active announcements to show." /> : <div className="dashboard-announcement-list">
+              {visibleAnnouncements.map((announcement) => { const category = getAnnouncementCategory(announcement.target_type); return <article className="dashboard-announcement" key={announcement.id}><div className="dashboard-announcement-meta">{category && <span>{category}</span>}<time dateTime={announcement.created_at}>{formatNotificationDate(announcement.created_at)}</time></div><h3>{announcement.title || 'Congregation announcement'}</h3>{(announcement.content || announcement.description) && <p>{announcement.content || announcement.description}</p>}</article>; })}
+            </div>}
+          </section>
+        </div>
 
-        <section className="dashboard-panel dashboard-quick-actions" aria-labelledby="quick-actions-title">
-          <SectionHeading icon="bolt" title="Quick actions" />
-          <div className="dashboard-action-list">
-            <Link to="/events"><span className="material-symbols-outlined" aria-hidden="true">calendar_add_on</span>Browse events</Link>
-            <Link to="/members"><span className="material-symbols-outlined" aria-hidden="true">person_search</span>Member directory</Link>
-            <Link to="/announcements"><span className="material-symbols-outlined" aria-hidden="true">campaign</span>Announcements</Link>
-            {isAdmin && <Link to="/reports"><span className="material-symbols-outlined" aria-hidden="true">bar_chart</span>Reports</Link>}
-          </div>
-        </section>
+        <aside className="dashboard-side-column" aria-label="Congregation details">
+          <UnavailablePanel icon="cake" title="Member birthdays" description="Birthday information is not available from the current dashboard API." />
+          <UnavailablePanel icon="task_alt" title="Committee spotlight" description="Committee task details are not available from the current dashboard API." />
+          <UnavailablePanel icon="auto_stories" title="Verse of the Day" description="No scripture content is supplied by the current dashboard API." />
+          <section className="dashboard-panel" aria-labelledby="notifications-title">
+            <SectionHeading icon="notifications" title="Recent notifications" linkTo="/notifications" linkLabel="View all" />
+            {visibleNotifications.length === 0 ? <EmptyState title="No notifications" description="You are all caught up." /> : <div className="dashboard-notification-list">
+              {visibleNotifications.map((notification) => <Link className={`dashboard-notification${notification.is_read ? '' : ' unread'}`} to="/notifications" key={notification.id}><span className="material-symbols-outlined" aria-hidden="true">{notification.is_read ? 'notifications_none' : 'notifications_active'}</span><div><strong>{notification.title || notification.notification_type || 'Notification'}</strong><p>{notification.message || notification.content || 'You have a new congregation update.'}</p></div><time dateTime={notification.created_at}>{formatNotificationDate(notification.created_at)}</time></Link>)}
+            </div>}
+          </section>
+        </aside>
       </div>
     </div>
   );

@@ -39,15 +39,19 @@ export default function Topbar({ onMenuClick }) {
         <button type="button" className="icon-button mobile-menu-button" onClick={onMenuClick} aria-label="Open navigation menu">
           <span className="material-symbols-outlined" aria-hidden="true">menu</span>
         </button>
+        <div className="topbar-brand">
+          <img src="/images/church-emblem.png" alt="New Apostolic Church UNZA emblem" className="topbar-brand-mark" />
+          <div className="topbar-brand-copy"><strong>New Apostolic Church</strong><span>UNZA Congregation</span></div>
+        </div>
         <div className="page-context">
           <span className="breadcrumb">UNZA / Workspace</span>
           <h1>{pageName}</h1>
         </div>
       </div>
       <div className="topbar-actions">
-        <div className="topbar-search" aria-label="Search workspace">
+        <div className="topbar-search" aria-label="Search workspace" role="search" title="Search is not available yet">
           <span className="material-symbols-outlined" aria-hidden="true">search</span>
-          <span>Search workspace</span>
+          <input type="search" placeholder="Search members, announcements, committees, events..." aria-label="Search members, announcements, committees, events" readOnly />
           <kbd>/</kbd>
         </div>
         <Link to="/notifications" className="icon-button notification-button" aria-label="Open notifications">
