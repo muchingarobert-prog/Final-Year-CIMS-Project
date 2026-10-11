@@ -67,8 +67,11 @@ class Announcement(models.Model):
 
             else:
 
+                from committees.models import CommitteeMembership
+
                 users = User.objects.filter(
-                    committees=self.committee
+                    committee_memberships__committee=self.committee,
+                    committee_memberships__is_active=True,
                 )
 
             notifications = []

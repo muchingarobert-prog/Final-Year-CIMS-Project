@@ -1,5 +1,6 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from church_members.models import User
 from social.models import Post
@@ -20,6 +21,12 @@ class SocialSecurityTests(APITestCase):
 			email='social_other@example.com',
 			password='StrongP@ssw0rd!',
 			role='MEMBER',
+		)
+		cls.high_privilege = User.objects.create_user(
+			username='social_high',
+			email='social_high@example.com',
+			password='StrongP@ssw0rd!',
+			role='HIGH_PRIVILEGE_USER',
 		)
 		cls.private_post = Post.objects.create(
 			title='Private',
@@ -51,3 +58,15 @@ class SocialSecurityTests(APITestCase):
 		)
 		self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 		self.assertEqual(Post.objects.get(id=response.data['id']).author, self.member)
+
+	def test_gallery_upload_rejects_unsupported_extension(self):
+		self.client.force_authenticate(user=self.high_privilege)
+		response = self.client.post(
+			'/api/social/gallery/',
+			{
+				'title': 'Unsafe upload',
+				'file': SimpleUploadedFile('payload.exe', b'not allowed'),
+			},
+			format='multipart',
+		)
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from pathlib import Path
 
 from .models import Document
 
@@ -37,3 +38,23 @@ class DocumentSerializer(
             )
 
         return None
+
+    def validate_file(self, value):
+        if value.size > 20 * 1024 * 1024:
+            raise serializers.ValidationError(
+                'Documents must be 20 MB or smaller.'
+            )
+
+        extension = Path(value.name).suffix.lower()
+        if extension not in {
+            '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+            '.txt', '.jpg', '.jpeg', '.png',
+        }:
+            raise serializers.ValidationError(
+                'Unsupported document file type.'
+            )
+
+        if '/' in value.name or '\\' in value.name or '\x00' in value.name:
+            raise serializers.ValidationError('Invalid document filename.')
+
+        return value

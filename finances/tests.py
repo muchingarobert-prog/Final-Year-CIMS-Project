@@ -26,10 +26,36 @@ class FinancePermissionsTests(APITestCase):
             last_name='Admin',
             role='ADMIN_USER',
         )
+        cls.high_privilege = User.objects.create_user(
+            username='finance_high',
+            email='finance_high@example.com',
+            password='StrongP@ssw0rd!',
+            role='HIGH_PRIVILEGE_USER',
+        )
+        cls.super_user = User.objects.create_user(
+            username='finance_super',
+            email='finance_super@example.com',
+            password='StrongP@ssw0rd!',
+            role='SUPER_USER',
+        )
         cls.category = FinancialCategory.objects.create(
             name='Tithe',
             category_type='TITHE',
             description='Tithe contribution',
+        )
+        cls.income = Income.objects.create(
+            member=cls.member,
+            category=cls.category,
+            amount='100.00',
+            payment_method='CASH',
+            recorded_by=cls.admin,
+        )
+        cls.expense = Expense.objects.create(
+            title='Approved expense',
+            category=cls.category,
+            amount='25.00',
+            requested_by=cls.admin,
+            status='APPROVED',
         )
 
     def authenticate(self, user):
@@ -96,3 +122,55 @@ class FinancePermissionsTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNone(Expense.objects.get(id=response.data['id']).approved_by)
+
+    def test_only_admin_and_super_user_can_read_finances(self):
+        for user in [self.member, self.high_privilege]:
+            self.authenticate(user)
+            for endpoint in [
+                '/api/finances/income/',
+                f'/api/finances/income/{self.income.id}/',
+                '/api/finances/expenses/',
+                f'/api/finances/expenses/{self.expense.id}/',
+                '/api/finances/income/summary/',
+                '/api/finances/expenses/summary/',
+            ]:
+                self.assertEqual(
+                    self.client.get(endpoint).status_code,
+                    status.HTTP_403_FORBIDDEN,
+                )
+
+        for user in [self.admin, self.super_user]:
+            self.authenticate(user)
+            for endpoint in [
+                '/api/finances/income/',
+                f'/api/finances/income/{self.income.id}/',
+                '/api/finances/expenses/',
+                f'/api/finances/expenses/{self.expense.id}/',
+                '/api/finances/income/summary/',
+                '/api/finances/expenses/summary/',
+            ]:
+                self.assertEqual(
+                    self.client.get(endpoint).status_code,
+                    status.HTTP_200_OK,
+                )
+
+    def test_only_admin_and_super_user_can_approve_expenses(self):
+        for user in [self.member, self.high_privilege]:
+            self.authenticate(user)
+            response = self.client.post(
+                f'/api/finances/expenses/{self.expense.id}/approve/'
+            )
+            self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        for user in [self.admin, self.super_user]:
+            expense = Expense.objects.create(
+                title=f'Approval for {user.username}',
+                category=self.category,
+                amount='10.00',
+                requested_by=self.member,
+            )
+            self.authenticate(user)
+            response = self.client.post(
+                f'/api/finances/expenses/{expense.id}/approve/'
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -1,7 +1,10 @@
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth.password_validation import validate_password
+from binascii import Error as BinasciiError
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
+from django.core.exceptions import ValidationError as DjangoValidationError
+from pathlib import Path
 
 from rest_framework import serializers
 
@@ -83,6 +86,23 @@ class ProfileSerializer(serializers.ModelSerializer):
             "is_active",
         ]
 
+    def validate_profile_picture(self, value):
+        if value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError(
+                'Profile pictures must be 5 MB or smaller.'
+            )
+
+        extension = Path(value.name).suffix.lower()
+        if extension not in {'.jpg', '.jpeg', '.png', '.webp'}:
+            raise serializers.ValidationError(
+                'Profile pictures must be JPG, PNG, or WebP images.'
+            )
+
+        if '/' in value.name or '\\' in value.name or '\x00' in value.name:
+            raise serializers.ValidationError('Invalid profile picture filename.')
+
+        return value
+
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -143,13 +163,19 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
     def save(self):
 
-        uid = force_str(
-            urlsafe_base64_decode(
-                self.validated_data["uidb64"]
+        try:
+            uid = force_str(
+                urlsafe_base64_decode(
+                    self.validated_data["uidb64"]
+                )
             )
-        )
+        except (BinasciiError, UnicodeDecodeError, ValueError, TypeError):
+            raise serializers.ValidationError('Invalid reset link.')
 
-        user = User.objects.get(pk=uid)
+        try:
+            user = User.objects.get(pk=uid)
+        except (User.DoesNotExist, ValueError, TypeError, DjangoValidationError):
+            raise serializers.ValidationError('Invalid reset link.')
 
         token = self.validated_data["token"]
 

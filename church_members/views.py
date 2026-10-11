@@ -11,7 +11,10 @@ from rest_framework.response import Response
 from authentication.permissions import IsAdminUserRole
 
 from .models import User
-from .serializers import UserSerializer
+from .serializers import (
+    MemberDirectorySerializer,
+    UserSerializer,
+)
 from .serializers_birthday import BirthdaySerializer
 
 
@@ -37,6 +40,12 @@ class UserViewSet(viewsets.ModelViewSet):
             from rest_framework.permissions import IsAuthenticated
             return [IsAuthenticated()]
         return [IsAdminUserRole()]
+
+    def public_directory_queryset(self):
+        return User.objects.filter(
+            Q(is_profile_public=True) |
+            Q(pk=self.request.user.pk)
+        )
 
     @action(
         detail=False,
@@ -171,14 +180,14 @@ class UserViewSet(viewsets.ModelViewSet):
             ''
         )
 
-        users = User.objects.filter(
+        users = self.public_directory_queryset().filter(
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query) |
             Q(username__icontains=query) |
             Q(email__icontains=query)
         )
 
-        serializer = UserSerializer(
+        serializer = MemberDirectorySerializer(
             users,
             many=True
         )
@@ -212,11 +221,11 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def recent_members(self, request):
 
-        users = User.objects.order_by(
+        users = self.public_directory_queryset().order_by(
             '-date_joined'
         )[:20]
 
-        serializer = UserSerializer(
+        serializer = MemberDirectorySerializer(
             users,
             many=True
         )
@@ -231,12 +240,12 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def member_directory(self, request):
 
-        users = User.objects.order_by(
+        users = self.public_directory_queryset().order_by(
             'first_name',
             'last_name'
         )
 
-        serializer = UserSerializer(
+        serializer = MemberDirectorySerializer(
             users,
             many=True
         )
@@ -251,7 +260,7 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def leaders(self, request):
 
-        users = User.objects.filter(
+        users = self.public_directory_queryset().filter(
             role__in=[
                 'SUPER_USER',
                 'ADMIN_USER',
@@ -259,7 +268,7 @@ class UserViewSet(viewsets.ModelViewSet):
             ]
         )
 
-        serializer = UserSerializer(
+        serializer = MemberDirectorySerializer(
             users,
             many=True
         )
@@ -274,11 +283,11 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def students(self, request):
 
-        users = User.objects.exclude(
+        users = self.public_directory_queryset().exclude(
             programme_of_study=''
         )
 
-        serializer = UserSerializer(
+        serializer = MemberDirectorySerializer(
             users,
             many=True
         )
@@ -293,11 +302,11 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def baptized(self, request):
 
-        users = User.objects.exclude(
+        users = self.public_directory_queryset().exclude(
             date_of_baptism=None
         )
 
-        serializer = UserSerializer(
+        serializer = MemberDirectorySerializer(
             users,
             many=True
         )
@@ -312,11 +321,11 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def sealed(self, request):
 
-        users = User.objects.exclude(
+        users = self.public_directory_queryset().exclude(
             date_of_sealing=None
         )
 
-        serializer = UserSerializer(
+        serializer = MemberDirectorySerializer(
             users,
             many=True
         )

@@ -40,3 +40,16 @@ class DocumentSecurityTests(APITestCase):
 		self.client.force_authenticate(user=self.owner)
 		response = self.client.get(f'/api/documents/{self.private_document.id}/')
 		self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+	def test_document_upload_rejects_unsupported_extension(self):
+		self.client.force_authenticate(user=self.owner)
+		response = self.client.post(
+			'/api/documents/',
+			{
+				'title': 'Unsafe document',
+				'document_type': 'OTHER',
+				'file': SimpleUploadedFile('payload.exe', b'not allowed'),
+			},
+			format='multipart',
+		)
+		self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

@@ -19,9 +19,17 @@ def env_list(name, default=''):
 
 
 DEBUG = env_bool('DEBUG', True)
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or secrets.token_urlsafe(50)
+DJANGO_ENV = os.environ.get('DJANGO_ENV', 'development').lower()
+DJANGO_SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+SECRET_KEY = DJANGO_SECRET_KEY or secrets.token_urlsafe(50)
 
-if not DEBUG and (not os.environ.get('DJANGO_SECRET_KEY') or len(SECRET_KEY) < 50):
+if DJANGO_ENV == 'production' and 'DEBUG' not in os.environ:
+    raise RuntimeError('DEBUG must be explicitly set when DJANGO_ENV=production')
+
+if DJANGO_ENV == 'production' and DEBUG:
+    raise RuntimeError('DEBUG must be False when DJANGO_ENV=production')
+
+if not DEBUG and (not DJANGO_SECRET_KEY or len(SECRET_KEY) < 50):
     raise RuntimeError('DJANGO_SECRET_KEY must be set to at least 50 characters when DEBUG=False')
 
 ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver' if DEBUG else '')
@@ -193,6 +201,12 @@ CSRF_TRUSTED_ORIGINS = env_list(
     'http://localhost:3000,http://127.0.0.1:3000' if DEBUG else '',
 )
 
+if not DEBUG and not CORS_ALLOWED_ORIGINS:
+    raise RuntimeError('CORS_ALLOWED_ORIGINS must be set when DEBUG=False')
+
+if not DEBUG and not CSRF_TRUSTED_ORIGINS:
+    raise RuntimeError('CSRF_TRUSTED_ORIGINS must be set when DEBUG=False')
+
 
 # ==================================================
 # DJANGO REST FRAMEWORK
@@ -202,6 +216,17 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.ScopedRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'login': '100/minute',
+        'register': '50/hour',
+        'password_reset': '50/hour',
+        'password_reset_confirm': '50/hour',
+        'token_refresh': '100/minute',
+        'logout': '100/minute',
+    },
 }
 
 
@@ -213,6 +238,10 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@example.com')
+PASSWORD_RESET_FRONTEND_URL = os.environ.get(
+    'PASSWORD_RESET_FRONTEND_URL',
+    'http://localhost:3000/reset-password',
+).rstrip('/')
 EMAIL_BACKEND = os.environ.get(
     'EMAIL_BACKEND',
     'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend',
@@ -222,6 +251,9 @@ EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = env_bool('EMAIL_USE_TLS', True)
+
+if not DEBUG and EMAIL_BACKEND.endswith('smtp.EmailBackend') and not EMAIL_HOST:
+    raise RuntimeError('EMAIL_HOST must be set for production SMTP email delivery')
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', True)

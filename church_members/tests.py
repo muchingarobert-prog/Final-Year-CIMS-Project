@@ -1,4 +1,5 @@
 from datetime import date
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from django.urls import reverse
 
@@ -55,6 +56,27 @@ class ChurchMembersApiTests(APITestCase):
         response = self.client.get('/api/users/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(len(response.data), 1)
+
+    def test_private_profile_is_excluded_from_member_directory(self):
+        self.member.is_profile_public = False
+        self.member.phone_number = '555-0100'
+        self.member.save()
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get('/api/users/member_directory/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn(self.member.id, [item['id'] for item in response.data])
+        self.assertNotIn('phone_number', response.data[0])
+
+    def test_user_profile_upload_rejects_unsupported_extension(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.patch(
+            f'/api/users/{self.member.id}/',
+            {'profile_picture': SimpleUploadedFile('payload.exe', b'not an image')},
+            format='multipart',
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_member_can_access_birthday_endpoints(self):
         self.member.date_of_birth = date.today()

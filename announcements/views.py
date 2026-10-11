@@ -5,6 +5,8 @@ from rest_framework.response import Response
 
 from authentication.permissions import IsHighPrivilegeOrAbove
 
+from django.db.models import Q
+
 from .models import Announcement
 from .serializers import AnnouncementSerializer
 
@@ -28,10 +30,39 @@ class AnnouncementViewSet(
     ]
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in [
+            'create',
+            'update',
+            'partial_update',
+            'destroy',
+            'deactivate',
+        ]:
             return [IsHighPrivilegeOrAbove()]
 
         return [IsAuthenticated()]
+
+    def get_queryset(self):
+        queryset = Announcement.objects.filter(
+            is_active=True
+        ).order_by(
+            '-created_at'
+        )
+
+        if self.request.user.role in [
+            'SUPER_USER',
+            'ADMIN_USER',
+            'HIGH_PRIVILEGE_USER',
+        ]:
+            return queryset
+
+        return queryset.filter(
+            Q(target_type='ALL') |
+            Q(
+                target_type='COMMITTEE',
+                committee__memberships__user=self.request.user,
+                committee__memberships__is_active=True,
+            )
+        ).distinct()
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
@@ -45,14 +76,7 @@ class AnnouncementViewSet(
         request
     ):
 
-        announcements = (
-            Announcement.objects.filter(
-                is_active=True
-            )
-            .order_by(
-                '-created_at'
-            )[:10]
-        )
+        announcements = self.get_queryset()[:10]
 
         serializer = (
             AnnouncementSerializer(
@@ -77,20 +101,18 @@ class AnnouncementViewSet(
         return Response(
             {
                 "total":
-                Announcement.objects.count(),
+                self.get_queryset().count(),
 
                 "active":
-                Announcement.objects.filter(
-                    is_active=True
-                ).count(),
+                self.get_queryset().count(),
 
                 "committee_specific":
-                Announcement.objects.filter(
+                self.get_queryset().filter(
                     target_type='COMMITTEE'
                 ).count(),
 
                 "general":
-                Announcement.objects.filter(
+                self.get_queryset().filter(
                     target_type='ALL'
                 ).count()
             }

@@ -2,6 +2,8 @@ from datetime import timedelta
 
 from django.utils import timezone
 from django.urls import reverse
+from django.test import override_settings
+from unittest.mock import patch
 
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -124,3 +126,35 @@ class CoreApiTests(APITestCase):
         self.assertGreaterEqual(len(response.data), 1)
         response_titles = [item.get('title') for item in response.data]
         self.assertIn(self.event.title, response_titles)
+
+    @override_settings(
+        PASSWORD_RESET_FRONTEND_URL='https://cims.example/reset-password'
+    )
+    @patch('authentication.views.send_mail')
+    def test_password_reset_response_is_generic_and_link_is_configurable(
+        self,
+        send_mail,
+    ):
+        known_response = self.client.post(
+            '/api/auth/password-reset/',
+            {'email': self.user.email},
+            format='json',
+        )
+        unknown_response = self.client.post(
+            '/api/auth/password-reset/',
+            {'email': 'missing@example.com'},
+            format='json',
+        )
+
+        self.assertEqual(known_response.status_code, unknown_response.status_code)
+        self.assertEqual(known_response.data, unknown_response.data)
+        self.assertEqual(known_response.data['message'], 'If that email exists, a reset link has been sent.')
+        self.assertIn('https://cims.example/reset-password/', send_mail.call_args[1]['message'])
+
+    def test_password_reset_confirm_rejects_malformed_user_id(self):
+        response = self.client.post(
+            '/api/auth/password-reset-confirm/not-valid/token/',
+            {'password': 'NewStr0ngPassw0rd!'},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

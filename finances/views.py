@@ -67,9 +67,6 @@ class IncomeViewSet(
     ]
 
     def get_permissions(self):
-        if self.request.method in SAFE_METHODS:
-            return [IsAuthenticated()]
-
         return [IsAdminUserRole()]
 
     def perform_create(
@@ -122,9 +119,6 @@ class ExpenseViewSet(
     ]
 
     def get_permissions(self):
-        if self.request.method in SAFE_METHODS:
-            return [IsAuthenticated()]
-
         return [IsAdminUserRole()]
 
     def perform_create(

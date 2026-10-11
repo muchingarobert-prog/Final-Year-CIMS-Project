@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from pathlib import Path
 
 from .models import (
     Post,
@@ -289,6 +290,26 @@ class MediaGallerySerializer(serializers.ModelSerializer):
             f"{obj.uploaded_by.first_name} "
             f"{obj.uploaded_by.last_name}"
         ).strip()
+
+    def validate_file(self, value):
+        if value.size > 50 * 1024 * 1024:
+            raise serializers.ValidationError(
+                'Gallery files must be 50 MB or smaller.'
+            )
+
+        extension = Path(value.name).suffix.lower()
+        if extension not in {
+            '.jpg', '.jpeg', '.png', '.webp', '.gif',
+            '.mp4', '.webm', '.mov',
+        }:
+            raise serializers.ValidationError(
+                'Unsupported gallery file type.'
+            )
+
+        if '/' in value.name or '\\' in value.name or '\x00' in value.name:
+            raise serializers.ValidationError('Invalid gallery filename.')
+
+        return value
 
 
 class PrayerRequestSerializer(serializers.ModelSerializer):

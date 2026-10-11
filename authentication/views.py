@@ -9,11 +9,13 @@ from django.utils.http import (
 from django.db.models import Q
 
 from rest_framework import generics, status
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from church_members.models import User
 
@@ -36,6 +38,20 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
 
     serializer_class = RegisterSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'register'
+
+
+class LoginView(TokenObtainPairView):
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'login'
+
+
+class RefreshTokenView(TokenRefreshView):
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'token_refresh'
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
@@ -158,6 +174,8 @@ class LogoutView(APIView):
     permission_classes = [
         IsAuthenticated
     ]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'logout'
 
     def post(self, request):
 
@@ -193,6 +211,8 @@ class LogoutView(APIView):
 class PasswordResetRequestView(APIView):
 
     serializer_class = PasswordResetRequestSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'password_reset'
 
     def post(self, request):
 
@@ -232,7 +252,7 @@ class PasswordResetRequestView(APIView):
         )
 
         reset_link = (
-            f"http://localhost:3000/reset-password/{uid}/{token}/"
+            f"{settings.PASSWORD_RESET_FRONTEND_URL}/{uid}/{token}/"
         )
 
         send_mail(
@@ -250,18 +270,18 @@ class PasswordResetRequestView(APIView):
         )
 
         return Response(
-
             {
                 "message":
-                "Password reset email sent."
+                "If that email exists, a reset link has been sent."
             }
-
         )
 
 
 class PasswordResetConfirmView(APIView):
 
     serializer_class = PasswordResetConfirmSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'password_reset_confirm'
 
     def post(
 

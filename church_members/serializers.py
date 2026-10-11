@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 
 from rest_framework import serializers
 
@@ -21,6 +22,23 @@ class UserSerializer(
     age = serializers.SerializerMethodField()
 
     committee_count = serializers.SerializerMethodField()
+
+    def validate_profile_picture(self, value):
+        if value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError(
+                'Profile pictures must be 5 MB or smaller.'
+            )
+
+        extension = Path(value.name).suffix.lower()
+        if extension not in {'.jpg', '.jpeg', '.png', '.webp'}:
+            raise serializers.ValidationError(
+                'Profile pictures must be JPG, PNG, or WebP images.'
+            )
+
+        if '/' in value.name or '\\' in value.name or '\x00' in value.name:
+            raise serializers.ValidationError('Invalid profile picture filename.')
+
+        return value
 
     class Meta:
 
@@ -110,3 +128,22 @@ class UserSerializer(
             )
 
         return attrs
+
+
+class MemberDirectorySerializer(
+    serializers.ModelSerializer
+):
+
+    class Meta:
+
+        model = User
+
+        fields = [
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'role',
+            'profile_picture',
+            'bio',
+        ]
