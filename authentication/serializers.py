@@ -86,6 +86,12 @@ class ProfileSerializer(serializers.ModelSerializer):
             "is_active",
         ]
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.is_superuser:
+            data['role'] = 'SUPER_USER'
+        return data
+
     def validate_profile_picture(self, value):
         if value.size > 5 * 1024 * 1024:
             raise serializers.ValidationError(

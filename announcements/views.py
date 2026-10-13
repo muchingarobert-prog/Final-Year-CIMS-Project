@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from authentication.permissions import IsHighPrivilegeOrAbove
+from authentication.permissions import IsHighPrivilegeOrAbove, user_has_any_role
 
 from django.db.models import Q
 
@@ -48,11 +48,7 @@ class AnnouncementViewSet(
             '-created_at'
         )
 
-        if self.request.user.role in [
-            'SUPER_USER',
-            'ADMIN_USER',
-            'HIGH_PRIVILEGE_USER',
-        ]:
+        if user_has_any_role(self.request.user, ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER']):
             return queryset
 
         return queryset.filter(

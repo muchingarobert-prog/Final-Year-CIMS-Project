@@ -8,6 +8,7 @@ from django.db.models import Q
 from authentication.permissions import (
     IsAdminOrOwner,
     IsHighPrivilegeOrAbove,
+    user_has_any_role,
 )
 
 from .models import (
@@ -36,11 +37,7 @@ from .serializers import (
 def visible_posts_for(user):
     queryset = Post.objects.filter(is_active=True)
 
-    if user.role in [
-        'SUPER_USER',
-        'ADMIN_USER',
-        'HIGH_PRIVILEGE_USER'
-    ]:
+    if user_has_any_role(user, ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER']):
         return queryset
 
     return queryset.filter(
@@ -277,11 +274,7 @@ class PrayerRequestViewSet(
     ]
 
     def get_queryset(self):
-        if self.request.user.role in [
-            'SUPER_USER',
-            'ADMIN_USER',
-            'HIGH_PRIVILEGE_USER'
-        ]:
+        if user_has_any_role(self.request.user, ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER']):
             return self.queryset
 
         return self.queryset.filter(member=self.request.user)
@@ -340,11 +333,7 @@ class TestimonyViewSet(
     ]
 
     def get_queryset(self):
-        if self.request.user.role in [
-            'SUPER_USER',
-            'ADMIN_USER',
-            'HIGH_PRIVILEGE_USER'
-        ]:
+        if user_has_any_role(self.request.user, ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER']):
             return self.queryset
 
         return self.queryset.filter(

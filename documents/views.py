@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 
 from rest_framework.response import Response
 
-from authentication.permissions import IsAdminOrOwner
+from authentication.permissions import IsAdminOrOwner, user_has_any_role
 
 from .models import Document
 
@@ -41,11 +41,7 @@ class DocumentViewSet(
     def get_queryset(self):
         queryset = Document.objects.order_by('-created_at')
 
-        if self.request.user.role in [
-            'SUPER_USER',
-            'ADMIN_USER',
-            'HIGH_PRIVILEGE_USER'
-        ]:
+        if user_has_any_role(self.request.user, ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER']):
             return queryset
 
         return queryset.filter(

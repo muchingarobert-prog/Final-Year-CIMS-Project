@@ -147,7 +147,7 @@ class DashboardView(APIView):
 
                     "email": user.email,
 
-                    "role": user.role,
+                    "role": "SUPER_USER" if user.is_superuser else user.role,
 
                 },
 

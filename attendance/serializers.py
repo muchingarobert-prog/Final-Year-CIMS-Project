@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from authentication.permissions import user_has_any_role
 
 from .models import (
     AttendanceSession,
@@ -36,11 +37,7 @@ class AttendanceRecordSerializer(
         extra_kwargs = super().get_extra_kwargs()
         request = self.context.get('request')
 
-        if not request or request.user.role not in [
-            'SUPER_USER',
-            'ADMIN_USER',
-            'HIGH_PRIVILEGE_USER'
-        ]:
+        if not request or not user_has_any_role(request.user, ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER']):
             extra_kwargs['member'] = {'read_only': True}
 
         return extra_kwargs

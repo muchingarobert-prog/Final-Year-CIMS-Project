@@ -94,6 +94,52 @@ class EventsApiTests(APITestCase):
         self.assertEqual(response.data['recurrence'], 'WEEKLY')
         self.assertEqual(response.data['recurrence_day'], 'SUNDAY')
 
+    def test_django_superuser_can_login_and_create_event_with_default_role(self):
+        superuser = User.objects.create_superuser(
+            username='django_superuser',
+            email='django_superuser@example.com',
+            password='StrongP@ssw0rd!',
+        )
+        self.assertEqual(superuser.role, 'MEMBER')
+
+        login_response = self.client.post(
+            '/api/auth/login/',
+            {'username': superuser.username, 'password': 'StrongP@ssw0rd!'},
+            format='json',
+        )
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f"Bearer {login_response.data['access']}"
+        )
+
+        profile_response = self.client.get('/api/auth/profile/')
+        self.assertEqual(profile_response.status_code, status.HTTP_200_OK)
+        self.assertTrue(profile_response.data['is_superuser'])
+        self.assertTrue(profile_response.data['is_staff'])
+        self.assertEqual(profile_response.data['role'], 'SUPER_USER')
+
+        dashboard_response = self.client.get('/api/auth/dashboard/')
+        self.assertEqual(dashboard_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(dashboard_response.data['user']['role'], 'SUPER_USER')
+
+        response = self.client.post(
+            '/api/events/',
+            {
+                'title': 'Superuser-created event',
+                'description': 'Authorized event creation test.',
+                'event_type': 'SERVICE',
+                'event_date': (timezone.now() + timedelta(days=7)).strftime('%Y-%m-%dT%H:%M:%S'),
+                'location': 'Main Chapel',
+                'registration_required': False,
+                'max_attendees': 150,
+                'recurrence': 'NONE',
+                'recurrence_day': '',
+                'recurrence_end_date': '',
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
     def test_event_list_returns_data(self):
         self.authenticate(self.member)
         response = self.client.get('/api/events/')

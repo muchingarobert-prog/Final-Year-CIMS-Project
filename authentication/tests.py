@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.utils import timezone
 from django.urls import reverse
 from django.test import override_settings
@@ -72,6 +73,26 @@ class CoreApiTests(APITestCase):
         self.assertIn('access', response.data)
         self.assertIn('refresh', response.data)
         self.access_token = response.data['access']
+
+    def test_refresh_endpoint_returns_access_token(self):
+        login_response = self.client.post(
+            '/api/auth/login/',
+            {'username': self.user.username, 'password': 'StrongP@ssw0rd!'},
+            format='json',
+        )
+
+        response = self.client.post(
+            '/api/auth/token/refresh/',
+            {'refresh': login_response.data['refresh']},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('access', response.data)
+
+    def test_jwt_lifetimes_are_practice_friendly_and_finite(self):
+        self.assertEqual(settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'], timedelta(minutes=30))
+        self.assertEqual(settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'], timedelta(days=7))
 
     def test_dashboard_requires_auth(self):
         url = '/api/auth/dashboard/'

@@ -3,6 +3,10 @@ from rest_framework.permissions import (
 )
 
 
+def user_has_any_role(user, roles):
+    return user.is_authenticated and (user.is_superuser or user.role in roles)
+
+
 class IsSuperUser(
     BasePermission
 ):
@@ -13,11 +17,7 @@ class IsSuperUser(
         view
     ):
 
-        return (
-            request.user.is_authenticated
-            and request.user.role ==
-            'SUPER_USER'
-        )
+        return user_has_any_role(request.user, ['SUPER_USER'])
 
 
 class IsAdminUserRole(
@@ -30,13 +30,7 @@ class IsAdminUserRole(
         view
     ):
 
-        return (
-            request.user.is_authenticated
-            and request.user.role in [
-                'SUPER_USER',
-                'ADMIN_USER'
-            ]
-        )
+        return user_has_any_role(request.user, ['SUPER_USER', 'ADMIN_USER'])
 
 
 class IsHighPrivilegeOrAbove(
@@ -49,14 +43,7 @@ class IsHighPrivilegeOrAbove(
         view
     ):
 
-        return (
-            request.user.is_authenticated
-            and request.user.role in [
-                'SUPER_USER',
-                'ADMIN_USER',
-                'HIGH_PRIVILEGE_USER'
-            ]
-        )
+        return user_has_any_role(request.user, ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER'])
 
 
 class IsMemberOrAbove(
@@ -93,11 +80,7 @@ class IsAdminOrOwner(
         obj
     ):
 
-        if request.user.role in [
-            'SUPER_USER',
-            'ADMIN_USER',
-            'HIGH_PRIVILEGE_USER'
-        ]:
+        if user_has_any_role(request.user, ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER']):
             return True
 
         for field in [

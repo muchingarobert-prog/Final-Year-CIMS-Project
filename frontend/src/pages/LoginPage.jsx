@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
@@ -9,7 +9,8 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const { login, authError } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -18,7 +19,7 @@ export default function LoginPage() {
 
     try {
       await login({ username: username.trim(), password });
-      navigate('/dashboard');
+      navigate(location.state?.from || '/dashboard', { replace: true });
     } catch (err) {
       const message = err?.data?.detail || err?.response?.data?.detail || err?.message || 'Unable to sign in. Please verify your credentials and the backend connection.';
       setError(message);
@@ -108,7 +109,7 @@ export default function LoginPage() {
               <Link to="/register">Need an account?</Link>
             </div>
 
-            {error && <div className="error-message">{error}</div>}
+            {(error || authError) && <div className="error-message">{error || authError}</div>}
 
             <button type="submit" className="btn btn-primary btn-large" disabled={loading}>
               {loading ? 'Logging in...' : 'Sign in'}

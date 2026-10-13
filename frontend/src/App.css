@@ -384,6 +384,12 @@ p { color: var(--text-secondary); }
 .modal-header { border-bottom: 1px solid var(--border); }
 .modal-body { padding: var(--space-5); }
 .modal-footer { border-top: 1px solid var(--border); }
+.event-modal-backdrop { display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 16px; background: rgba(15, 23, 42, 0.48); }
+.event-modal-panel { display: flex; width: min(760px, 100%); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); min-height: 0; flex-direction: column; overflow: hidden; padding: 0; border-radius: 16px; }
+.event-modal-header { flex: 0 0 auto; margin-bottom: 0; }
+.event-modal-form { display: flex; min-height: 0; flex: 1 1 auto; flex-direction: column; overflow: hidden; }
+.event-form-content { display: grid; min-height: 0; flex: 1 1 auto; gap: 16px; overflow-y: auto; overscroll-behavior: contain; padding: var(--space-5); }
+.event-modal-footer { flex: 0 0 auto; justify-content: flex-end; gap: 12px; }
 .navbar, .navbar-container, .navbar-menu, .navbar-logo, .nav-link { display: flex; align-items: center; }
 .navbar { min-height: 68px; background: var(--primary-dark); padding: 0 var(--space-6); }
 .navbar-container { width: min(1180px, 100%); justify-content: space-between; margin: 0 auto; }

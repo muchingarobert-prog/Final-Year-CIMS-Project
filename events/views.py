@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 
-from authentication.permissions import IsAdminUserRole
+from authentication.permissions import IsAdminUserRole, user_has_any_role
 from .services import calendar_bounds, expand_recurring_events
 
 from .models import (
@@ -389,11 +389,7 @@ class EventRegistrationViewSet(
     ]
 
     def get_queryset(self):
-        if self.request.user.role in [
-            'SUPER_USER',
-            'ADMIN_USER',
-            'HIGH_PRIVILEGE_USER'
-        ]:
+        if user_has_any_role(self.request.user, ['SUPER_USER', 'ADMIN_USER', 'HIGH_PRIVILEGE_USER']):
             return EventRegistration.objects.all()
 
         return EventRegistration.objects.filter(

@@ -76,6 +76,20 @@ export default function EventsPage() {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [busyAction, setBusyAction] = useState('');
 
+  useEffect(() => {
+    if (!isFormOpen) return undefined;
+
+    const bodyOverflow = document.body.style.overflow;
+    const documentOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = bodyOverflow;
+      document.documentElement.style.overflow = documentOverflow;
+    };
+  }, [isFormOpen]);
+
   const loadEvents = async () => {
     setLoading(true);
     setError('');
@@ -444,94 +458,96 @@ export default function EventsPage() {
       </div>
 
       {isFormOpen && (
-        <div className="modal-backdrop" role="dialog" aria-modal="true" style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'grid', placeItems: 'center', background: 'rgba(15, 23, 42, 0.48)', padding: '24px' }}>
-          <div className="modal-panel" style={{ width: 'min(760px, 100%)', borderRadius: '16px', background: '#fff', boxShadow: '0 16px 40px rgba(15, 23, 42, 0.22)', padding: '24px' }}>
-            <div className="modal-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
+        <div className="modal-backdrop event-modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal-card event-modal-panel">
+            <div className="modal-header event-modal-header">
               <h2 style={{ margin: 0 }}>{formMode === 'edit' ? 'Update event' : 'Create event'}</h2>
               <button type="button" className="icon-button" onClick={() => setIsFormOpen(false)} aria-label="Close event form">×</button>
             </div>
 
-            <form onSubmit={handleSubmit} className="event-form" style={{ display: 'grid', gap: '16px' }}>
-              <div className="form-row">
+            <form onSubmit={handleSubmit} className="event-form event-modal-form">
+              <div className="event-form-content">
+                <div className="form-row">
+                  <label>
+                    Title
+                    <input name="title" value={formData.title} onChange={handleFormChange} required />
+                  </label>
+                  <label>
+                    Event type
+                    <select name="event_type" value={formData.event_type} onChange={handleFormChange}>
+                      <option value="SERVICE">Service</option>
+                      <option value="MEETING">Meeting</option>
+                      <option value="YOUTH">Youth program</option>
+                      <option value="SPECIAL">Special event</option>
+                    </select>
+                  </label>
+                </div>
+
                 <label>
-                  Title
-                  <input name="title" value={formData.title} onChange={handleFormChange} required />
+                  Description
+                  <textarea name="description" value={formData.description} onChange={handleFormChange} rows="4" />
                 </label>
-                <label>
-                  Event type
-                  <select name="event_type" value={formData.event_type} onChange={handleFormChange}>
-                    <option value="SERVICE">Service</option>
-                    <option value="MEETING">Meeting</option>
-                    <option value="YOUTH">Youth program</option>
-                    <option value="SPECIAL">Special event</option>
-                  </select>
-                </label>
+
+                <div className="form-row">
+                  <label>
+                    Event date and time
+                    <input type="datetime-local" name="event_date" value={formData.event_date} onChange={handleFormChange} required />
+                  </label>
+                  <label>
+                    Location
+                    <input name="location" value={formData.location} onChange={handleFormChange} placeholder="Main Sanctuary" />
+                  </label>
+                </div>
+
+                <div className="form-row">
+                  <label>
+                    Recurrence
+                    <select name="recurrence" value={formData.recurrence} onChange={handleFormChange}>
+                      <option value="NONE">None</option>
+                      <option value="DAILY">Daily</option>
+                      <option value="WEEKLY">Weekly</option>
+                      <option value="MONTHLY">Monthly</option>
+                    </select>
+                  </label>
+                  <label>
+                    Recurrence day
+                    <select name="recurrence_day" value={formData.recurrence_day} onChange={handleFormChange} disabled={formData.recurrence !== 'WEEKLY'}>
+                      <option value="">Select a weekday</option>
+                      <option value="MONDAY">Monday</option>
+                      <option value="TUESDAY">Tuesday</option>
+                      <option value="WEDNESDAY">Wednesday</option>
+                      <option value="THURSDAY">Thursday</option>
+                      <option value="FRIDAY">Friday</option>
+                      <option value="SATURDAY">Saturday</option>
+                      <option value="SUNDAY">Sunday</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div className="form-row">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    Registration required
+                    <input type="checkbox" name="registration_required" checked={formData.registration_required} onChange={handleFormChange} />
+                  </label>
+                  <label>
+                    Maximum attendees
+                    <input type="number" min="1" name="max_attendees" value={formData.max_attendees} onChange={handleFormChange} placeholder="Optional" />
+                  </label>
+                </div>
+
+                <div className="form-row">
+                  <label>
+                    Recurrence end date
+                    <input type="date" name="recurrence_end_date" value={formData.recurrence_end_date} onChange={handleFormChange} disabled={formData.recurrence === 'NONE'} />
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    Active
+                    <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleFormChange} />
+                  </label>
+                </div>
               </div>
 
-              <label>
-                Description
-                <textarea name="description" value={formData.description} onChange={handleFormChange} rows="4" />
-              </label>
-
-              <div className="form-row">
-                <label>
-                  Event date and time
-                  <input type="datetime-local" name="event_date" value={formData.event_date} onChange={handleFormChange} required />
-                </label>
-                <label>
-                  Location
-                  <input name="location" value={formData.location} onChange={handleFormChange} placeholder="Main Sanctuary" />
-                </label>
-              </div>
-
-              <div className="form-row">
-                <label>
-                  Recurrence
-                  <select name="recurrence" value={formData.recurrence} onChange={handleFormChange}>
-                    <option value="NONE">None</option>
-                    <option value="DAILY">Daily</option>
-                    <option value="WEEKLY">Weekly</option>
-                    <option value="MONTHLY">Monthly</option>
-                  </select>
-                </label>
-                <label>
-                  Recurrence day
-                  <select name="recurrence_day" value={formData.recurrence_day} onChange={handleFormChange} disabled={formData.recurrence !== 'WEEKLY'}>
-                    <option value="">Select a weekday</option>
-                    <option value="MONDAY">Monday</option>
-                    <option value="TUESDAY">Tuesday</option>
-                    <option value="WEDNESDAY">Wednesday</option>
-                    <option value="THURSDAY">Thursday</option>
-                    <option value="FRIDAY">Friday</option>
-                    <option value="SATURDAY">Saturday</option>
-                    <option value="SUNDAY">Sunday</option>
-                  </select>
-                </label>
-              </div>
-
-              <div className="form-row">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  Registration required
-                  <input type="checkbox" name="registration_required" checked={formData.registration_required} onChange={handleFormChange} />
-                </label>
-                <label>
-                  Maximum attendees
-                  <input type="number" min="1" name="max_attendees" value={formData.max_attendees} onChange={handleFormChange} placeholder="Optional" />
-                </label>
-              </div>
-
-              <div className="form-row">
-                <label>
-                  Recurrence end date
-                  <input type="date" name="recurrence_end_date" value={formData.recurrence_end_date} onChange={handleFormChange} disabled={formData.recurrence === 'NONE'} />
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  Active
-                  <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleFormChange} />
-                </label>
-              </div>
-
-              <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <div className="modal-footer event-modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={() => setIsFormOpen(false)}>
                   Cancel
                 </button>

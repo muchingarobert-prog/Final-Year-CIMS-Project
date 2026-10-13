@@ -1,7 +1,13 @@
 const ACCESS_TOKEN_KEY = 'cims_access_token';
 const REFRESH_TOKEN_KEY = 'cims_refresh_token';
+const SESSION_EXPIRED_EVENT = 'cims:session-expired';
+const TOKENS_REFRESHED_EVENT = 'cims:tokens-refreshed';
+
+let refreshPromise = null;
 
 const getApiBase = () => {
+  if (import.meta.env.DEV) return window.location.origin;
+
   const envBase = import.meta.env.VITE_API_BASE_URL || '';
   if (envBase) return envBase.replace(/\/$/, '');
   return window.location.origin;
@@ -26,6 +32,11 @@ export const persistTokens = ({ accessToken, refreshToken }) => {
 export const clearStoredTokens = () => {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
+};
+
+const expireStoredSession = () => {
+  clearStoredTokens();
+  window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
 };
 
 export class ApiError extends Error {
@@ -76,8 +87,16 @@ const handleResponse = async (response) => {
   return data;
 };
 
-export const refreshAccessToken = async (refreshToken) => {
-  const response = await fetch(buildApiUrl('/api/auth/token/refresh/'), {
+const fetchApi = async (url, options) => {
+  try {
+    return await fetch(url, options);
+  } catch {
+    throw new ApiError('Unable to reach the API. Check that Django is running and the API base URL is configured correctly.', 0);
+  }
+};
+
+const requestRefreshedAccessToken = async (refreshToken) => {
+  const response = await fetchApi(buildApiUrl('/api/auth/token/refresh/'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -100,8 +119,19 @@ export const refreshAccessToken = async (refreshToken) => {
   if (data.refresh) {
     localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh);
   }
+  window.dispatchEvent(new Event(TOKENS_REFRESHED_EVENT));
 
   return data.access;
+};
+
+export const refreshAccessToken = (refreshToken) => {
+  if (!refreshPromise) {
+    refreshPromise = requestRefreshedAccessToken(refreshToken).finally(() => {
+      refreshPromise = null;
+    });
+  }
+
+  return refreshPromise;
 };
 
 export const apiRequest = async (path, options = {}, skipAuth = false) => {
@@ -122,21 +152,32 @@ export const apiRequest = async (path, options = {}, skipAuth = false) => {
     headers,
   };
 
-  let response = await fetch(buildApiUrl(path), requestInit);
+  let response = await fetchApi(buildApiUrl(path), requestInit);
 
-  if (response.status === 401 && !skipAuth && !_retry && refreshToken) {
+  if (response.status === 401 && !skipAuth && !_retry && (accessToken || refreshToken)) {
+    if (!refreshToken) {
+      expireStoredSession();
+      throw new ApiError('Your session expired. Please log in again.', 401);
+    }
+
     try {
-      const nextAccessToken = await refreshAccessToken(refreshToken);
+      const latestTokens = getStoredTokens();
+      const nextAccessToken = latestTokens.accessToken && latestTokens.accessToken !== accessToken
+        ? latestTokens.accessToken
+        : await refreshAccessToken(latestTokens.refreshToken || refreshToken);
       headers.set('Authorization', `Bearer ${nextAccessToken}`);
-      response = await fetch(buildApiUrl(path), {
+      response = await fetchApi(buildApiUrl(path), {
         ...requestInit,
         headers,
       });
-    } catch {
-      clearStoredTokens();
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
+    } catch (error) {
+      if (![400, 401, 403].includes(error.status)) throw error;
+      expireStoredSession();
+      throw new ApiError('Your session expired. Please log in again.', 401, error.data);
+    }
+
+    if (response.status === 401) {
+      expireStoredSession();
       throw new ApiError('Your session expired. Please log in again.', 401);
     }
   }
