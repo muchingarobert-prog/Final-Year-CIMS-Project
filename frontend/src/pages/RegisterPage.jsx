@@ -40,10 +40,10 @@ export default function RegisterPage() {
       setSuccess('Registration successful! Redirecting to login...');
       setTimeout(() => {
         navigate('/login');
-      }, 2000);
+      }, 1500);
     } catch (err) {
-      console.error('Registration error:', err);
-      setError(err.message || 'Failed to connect to backend. Make sure Django is running.');
+      const message = err?.data?.detail || err?.data?.non_field_errors || err?.message || 'Registration failed. Please review the form and try again.';
+      setError(Array.isArray(message) ? message.join(', ') : message);
     } finally {
       setLoading(false);
     }

@@ -3,13 +3,14 @@ const REFRESH_TOKEN_KEY = 'cims_refresh_token';
 
 const getApiBase = () => {
   const envBase = import.meta.env.VITE_API_BASE_URL || '';
-  return envBase.replace(/\/$/, '');
+  if (envBase) return envBase.replace(/\/$/, '');
+  return window.location.origin;
 };
 
 export const buildApiUrl = (path) => {
   const normalized = path.startsWith('/') ? path : `/${path}`;
   const base = getApiBase();
-  return base ? `${base}${normalized}` : normalized;
+  return `${base}${normalized}`;
 };
 
 export const getStoredTokens = () => ({
@@ -47,17 +48,29 @@ const parseJsonIfPresent = async (response) => {
   }
 };
 
+const extractErrorMessage = (data, fallback) => {
+  if (data == null) return fallback;
+  if (typeof data === 'string') return data;
+  if (Array.isArray(data)) {
+    return data.map((entry) => extractErrorMessage(entry, fallback)).filter(Boolean).join(', ');
+  }
+  if (typeof data === 'object') {
+    const direct = data.detail || data.message || data.error || data.non_field_errors;
+    if (direct) {
+      if (Array.isArray(direct)) return direct.join(', ');
+      if (typeof direct === 'object') return Object.values(direct).flat().join(', ');
+      return String(direct);
+    }
+    return Object.values(data).flatMap((value) => Array.isArray(value) ? value : [value]).filter(Boolean).join(', ');
+  }
+  return fallback;
+};
+
 const handleResponse = async (response) => {
   const data = await parseJsonIfPresent(response);
 
   if (!response.ok) {
-    const errorMessage =
-      data?.detail ||
-      data?.message ||
-      data?.error ||
-      `Request failed with status ${response.status}`;
-
-    throw new ApiError(errorMessage, response.status, data);
+    throw new ApiError(extractErrorMessage(data, `Request failed with status ${response.status}`), response.status, data);
   }
 
   return data;
@@ -76,7 +89,7 @@ export const refreshAccessToken = async (refreshToken) => {
   const data = await parseJsonIfPresent(response);
 
   if (!response.ok) {
-    throw new ApiError(data?.detail || 'Session expired', response.status, data);
+    throw new ApiError(extractErrorMessage(data, 'Session expired'), response.status, data);
   }
 
   if (!data?.access) {

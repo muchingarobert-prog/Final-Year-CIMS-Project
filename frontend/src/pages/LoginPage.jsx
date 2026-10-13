@@ -20,8 +20,8 @@ export default function LoginPage() {
       await login({ username: username.trim(), password });
       navigate('/dashboard');
     } catch (err) {
-      console.error('Login error:', err);
-      setError(err.message || 'Failed to connect to backend. Make sure Django is running on port 8000.');
+      const message = err?.data?.detail || err?.response?.data?.detail || err?.message || 'Unable to sign in. Please verify your credentials and the backend connection.';
+      setError(message);
     } finally {
       setLoading(false);
     }
